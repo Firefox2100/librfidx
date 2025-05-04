@@ -98,7 +98,7 @@ END_TEST
 TCase *ntag215_io_case(void) {
     TCase *tc = tcase_create("Ntag215 IO");
     tcase_add_test(tc, test_load_dump_only);
-    tcase_add_test(tc, test_load_with_signature);
+    tcase_add_test(tc, test_load_with_header);
     tcase_add_test(tc, test_save_and_reload);
 
     return tc;

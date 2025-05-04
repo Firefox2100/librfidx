@@ -33,20 +33,24 @@ if(BUILD_TESTS)
 
                 file(GLOB_RECURSE TEST_SOURCE tests/*.c)
 
-                add_executable(tests ${TEST_SOURCE})
-                target_include_directories(tests PRIVATE
+                add_executable(unit_test ${TEST_SOURCE})
+                target_include_directories(unit_test PRIVATE
                         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                         $<INSTALL_INTERFACE:include>
                         ${Check_INCLUDE_DIRS}
                 )
-                target_link_libraries(tests
+                target_link_libraries(unit_test
                         librfidx_shared
                         ${Check_LIBRARIES}
                 )
-                target_compile_definitions(tests PRIVATE UNIT_TESTING)
+                target_compile_definitions(unit_test PRIVATE UNIT_TESTING)
 
-                add_test(NAME tests
-                        COMMAND tests
+                file(COPY ${CMAKE_SOURCE_DIR}/tests/assets
+                        DESTINATION ${CMAKE_BINARY_DIR}/tests)
+
+                add_test(NAME unit_test
+                        COMMAND unit_test
+                        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests
                 )
         else()
                 message(WARNING "Unit tests will not be built: 'check' or 'pkg-config' not found.")
