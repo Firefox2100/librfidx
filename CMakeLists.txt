@@ -20,33 +20,35 @@ target_include_directories(librfidx_static PUBLIC
 )
 
 # ------------- UNIT TESTS SETUP -------------
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(Check REQUIRED check)
+option(BUILD_TESTS "Build unit tests" ON)
 
-enable_testing()
+if(BUILD_TESTS)
+        find_package(PkgConfig QUIET)
+        if(PkgConfig_FOUND)
+                pkg_check_modules(Check QUIET check)
+        endif()
 
-file(GLOB_RECURSE TEST_SOURCE tests/*.c)
+        if(PkgConfig_FOUND AND Check_FOUND)
+                enable_testing()
 
-# Test target
-add_executable(tests ${TEST_SOURCE})
+                file(GLOB_RECURSE TEST_SOURCE tests/*.c)
 
-target_include_directories(tests PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-        ${Check_INCLUDE_DIRS}
-)
+                add_executable(tests ${TEST_SOURCE})
+                target_include_directories(tests PRIVATE
+                        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                        $<INSTALL_INTERFACE:include>
+                        ${Check_INCLUDE_DIRS}
+                )
+                target_link_libraries(tests
+                        librfidx_shared
+                        ${Check_LIBRARIES}
+                )
+                target_compile_definitions(tests PRIVATE UNIT_TESTING)
 
-target_link_libraries(tests
-        librfidx_shared
-        ${Check_LIBRARIES}
-)
-
-target_compile_definitions(tests PRIVATE UNIT_TESTING)
-
-# file(COPY ${CMAKE_SOURCE_DIR}/tests/assets
-#         DESTINATION ${CMAKE_BINARY_DIR}/tests)
-
-add_test(NAME tests
-        COMMAND tests
-        # WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests
-        )
+                add_test(NAME tests
+                        COMMAND tests
+                )
+        else()
+                message(WARNING "Unit tests will not be built: 'check' or 'pkg-config' not found.")
+        endif()
+endif()
