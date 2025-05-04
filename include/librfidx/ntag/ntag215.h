@@ -12,7 +12,6 @@
 
 #include <stdint.h>
 #include "librfidx/common.h"
-#include "librfidx/ntag/ntag_common.h"
 #include "librfidx/ntag/ntag21x.h"
 
 #define NTAG215_PAGE_SIZE NTAG21X_PAGE_SIZE
@@ -58,10 +57,10 @@ typedef union {
  * can't be opened, or the size is wrong.
  * @param filename Path to the binary file.
  * @param ntag215 Pointer to the NTAG215Data buffer to load the data into.
- * @param signature: Pointer to the NtagSignature buffer to load the signature into.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to load Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, NtagSignature *signature);
+RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
 
 /**
  * @brief Saves NTAG215 data to a binary file
@@ -72,16 +71,16 @@ RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215,
  * writing fails.
  * @param filename Path to the binary file.
  * @param ntag215 Pointer to the NTAG215Data data.
- * @param signature: Pointer to the NtagSignature data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215, const NtagSignature *signature);
+RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header);
 
-RfidxStatus ntag215_load_from_eml(char *filename, Ntag215Data *ntag215, NtagSignature *signature);
-RfidxStatus ntag215_save_to_eml(char *filename, Ntag215Data *ntag215, NtagSignature *signature);
-RfidxStatus ntag215_load_from_json(char *filename, Ntag215Data *ntag215, NtagSignature *signature);
-RfidxStatus ntag215_save_to_json(char *filename, Ntag215Data *ntag215, NtagSignature *signature);
-RfidxStatus ntag215_load_from_nfc(char *filename, Ntag215Data *ntag215, NtagSignature *signature);
-RfidxStatus ntag215_save_to_nfc(char *filename, Ntag215Data *ntag215, NtagSignature *signature);
+RfidxStatus ntag215_load_from_eml(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_save_to_eml(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_load_from_json(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_save_to_json(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_load_from_nfc(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_save_to_nfc(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
 
 #endif //LIBRFIDX_NTAG215_H

@@ -12,7 +12,7 @@
 #include <string.h>
 #include <librfidx/ntag/ntag215.h>
 
-RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, NtagSignature *signature) {
+RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header) {
     FILE *file = fopen(filename, "rb");
 
     // Open the file
@@ -43,14 +43,14 @@ RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215,
             fclose(file);
             return RFIDX_BINARY_FILE_IO_ERROR;
         }
-    } else if (filesize == sizeof(Ntag215Data) + sizeof(NtagSignature)) {
-        // Contain both the dump and signature, dump first
-        if (fread(ntag215, sizeof(Ntag215Data), 1, file) != 1) {
+    } else if (filesize == sizeof(Ntag215Data) + sizeof(Ntag21xProxmarkHeader)) {
+        // Contain both the dump and header, header first
+        if (!fread(header, sizeof(Ntag21xProxmarkHeader), 1, file)) {
             fclose(file);
             return RFIDX_BINARY_FILE_IO_ERROR;
         }
 
-        if (!fread(signature, sizeof(NtagSignature), 1, file)) {
+        if (fread(ntag215, sizeof(Ntag215Data), 1, file) != 1) {
             fclose(file);
             return RFIDX_BINARY_FILE_IO_ERROR;
         }
@@ -63,25 +63,25 @@ RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215,
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215, const NtagSignature *signature) {
+RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header) {
     FILE *file = fopen(filename, "wb");
 
     if (!file) {
         return RFIDX_BINARY_FILE_IO_ERROR;
     }
 
-    if (fwrite(ntag215, sizeof(Ntag215Data), 1, file) != 1) {
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-
-    // If signature is not NULL or 0s, append it to the file
-    const uint8_t empty_signature[NTAG_SIGNATURE_SIZE] = {0};
-    if (signature && memcmp(signature, empty_signature, sizeof(NtagSignature)) != 0) {
-        if (fwrite(signature, sizeof(NtagSignature), 1, file) != 1) {
+    // If header is not NULL or 0s, write it to the file first
+    const uint8_t empty_header[sizeof(Ntag21xProxmarkHeader)] = {0};
+    if (header && memcmp(header, empty_header, sizeof(Ntag21xProxmarkHeader)) != 0) {
+        if (fwrite(header, sizeof(Ntag21xProxmarkHeader), 1, file) != 1) {
             fclose(file);
             return RFIDX_BINARY_FILE_IO_ERROR;
         }
+    }
+
+    if (fwrite(ntag215, sizeof(Ntag215Data), 1, file) != 1) {
+        fclose(file);
+        return RFIDX_BINARY_FILE_IO_ERROR;
     }
 
     fclose(file);

@@ -28,11 +28,10 @@ START_TEST(test_load_dump_only)
     fwrite(&data, sizeof(data), 1, fp);
     fclose(fp);
 
-    Ntag215Data loaded_data;
-    NtagSignature sig = {0};
-    memset(&loaded_data, 0, sizeof(loaded_data));
+    Ntag215Data loaded_data = {0};
+    Ntag21xProxmarkHeader loaded_header = {0};
 
-    RfidxStatus status = ntag215_load_from_binary(filename, &loaded_data, &sig);
+    RfidxStatus status = ntag215_load_from_binary(filename, &loaded_data, &loaded_header);
     ck_assert_int_eq(status, RFIDX_OK);
     ck_assert_mem_eq(&loaded_data, &data, sizeof(data));
 
@@ -40,9 +39,8 @@ START_TEST(test_load_dump_only)
 }
 END_TEST
 
-START_TEST(test_load_with_signature)
+START_TEST(test_load_with_header)
 {
-    // Create a temp file with Ntag215Data + NtagSignature
     char filename[] = "/tmp/ntagtestXXXXXX";
     int fd = mkstemp(filename);
     ck_assert_msg(fd != -1, "Failed to create temp file");
@@ -51,23 +49,21 @@ START_TEST(test_load_with_signature)
     ck_assert_ptr_nonnull(fp);
 
     Ntag215Data data = {0};
-    NtagSignature sig = {0};
+    Ntag21xProxmarkHeader header = {0};
     memset(&data, 0xBB, sizeof(data));
-    memset(&sig, 0xCC, sizeof(sig));
+    memset(&header, 0xCC, sizeof(header));
 
+    fwrite(&header, sizeof(header), 1, fp);
     fwrite(&data, sizeof(data), 1, fp);
-    fwrite(&sig, sizeof(sig), 1, fp);
     fclose(fp);
 
-    Ntag215Data loaded_data;
-    NtagSignature loaded_sig;
-    memset(&loaded_data, 0, sizeof(loaded_data));
-    memset(&loaded_sig, 0, sizeof(loaded_sig));
+    Ntag215Data loaded_data = {0};
+    Ntag21xProxmarkHeader loaded_header = {0};
 
-    RfidxStatus status = ntag215_load_from_binary(filename, &loaded_data, &loaded_sig);
+    RfidxStatus status = ntag215_load_from_binary(filename, &loaded_data, &loaded_header);
     ck_assert_int_eq(status, RFIDX_OK);
     ck_assert_mem_eq(&loaded_data, &data, sizeof(data));
-    ck_assert_mem_eq(&loaded_sig, &sig, sizeof(sig));
+    ck_assert_mem_eq(&loaded_header, &header, sizeof(header));
 
     unlink(filename);
 }
@@ -81,19 +77,19 @@ START_TEST(test_save_and_reload)
     close(fd);  // Save will fopen it again
 
     Ntag215Data data = {0};
-    NtagSignature sig = {0};
+    Ntag21xProxmarkHeader header = {0};
     memset(&data, 0xDE, sizeof(data));
-    memset(&sig, 0xAD, sizeof(sig));
+    memset(&header, 0xAD, sizeof(header));
 
-    RfidxStatus status = ntag215_save_to_binary(filename, &data, &sig);
+    RfidxStatus status = ntag215_save_to_binary(filename, &data, &header);
     ck_assert_int_eq(status, RFIDX_OK);
 
-    Ntag215Data loaded_data;
-    NtagSignature loaded_sig;
-    status = ntag215_load_from_binary(filename, &loaded_data, &loaded_sig);
+    Ntag215Data loaded_data = {0};
+    Ntag21xProxmarkHeader loaded_header = {0};
+    status = ntag215_load_from_binary(filename, &loaded_data, &loaded_header);
     ck_assert_int_eq(status, RFIDX_OK);
     ck_assert_mem_eq(&loaded_data, &data, sizeof(data));
-    ck_assert_mem_eq(&loaded_sig, &sig, sizeof(sig));
+    ck_assert_mem_eq(&loaded_header, &header, sizeof(header));
 
     unlink(filename);
 }
