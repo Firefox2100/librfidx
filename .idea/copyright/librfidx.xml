@@ -1,0 +1,6 @@
+<component name="CopyrightManager">
+  <copyright>
+    <option name="notice" value="librfidx - Universal RFID Tag Format Parser and Converter&#10;&#10;Copyright (c) &amp;#36;originalComment.match(&quot;Copyright \(c\) (\d+)&quot;, 1, &quot;-&quot;, &quot;&amp;#36;today.year&quot;)&amp;#36;today.year. Firefox2100&#10;&#10;This software is released under the MIT License.&#10;SPDX-License-Identifier: MIT" />
+    <option name="myName" value="librfidx" />
+  </copyright>
+</component>
