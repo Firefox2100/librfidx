@@ -78,9 +78,61 @@ RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag
 
 RfidxStatus ntag215_load_from_eml(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
 RfidxStatus ntag215_save_to_eml(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
-RfidxStatus ntag215_load_from_json(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
-RfidxStatus ntag215_save_to_json(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
-RfidxStatus ntag215_load_from_nfc(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+
+/**
+ * @brief Parse a JSON string into NTAG215 data and header
+ *
+ * Provided a JSON string, a NTAG215Data buffer and a signature buffer, this function
+ * processes the JSON string and loads the data into the buffers. If the JSON string
+ * is malformed, or the data is not in the expected format, it will return an error.
+ * @param json_str The JSON string to parse.
+ * @param ntag215 Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return Status code
+ */
+RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+
+/**
+ * @brief Load NTAG215 data from a JSON file
+ *
+ * Provided a path to JSON file, a NTAG215Data buffer and a signature buffer,
+ * this function will load the data from the file into the buffers. If the file
+ * contains the signature, it will also be loaded. Returns error if the file
+ * can't be opened, or the size is wrong.
+ * @param filename Path to the JSON file.
+ * @param ntag215 Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return Status code
+ */
+RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+
+/**
+ * @brief Serialize NTAG215 data and header to JSON string
+ *
+ * Provided a NTAG215Data buffer and a signature buffer, this function
+ * processes the data and header into a JSON string.
+ * @param ntag215 Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return JSON string
+ */
+char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header);
+
+/**
+ * @brief Save NTAG215 data and header to a JSON file
+ *
+ * Provided a path to save the JSON file, a NTAG215Data buffer and a signature buffer,
+ * this function will save the data to the file system. If the signature pointer is not null,
+ * and the buffer is not full of 0x00, it will also be saved. Returns error if the file
+ * writing fails.
+ * @param filename Path to the JSON file.
+ * @param ntag215 Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return Status code
+ */
+RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header);
+
+RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
 RfidxStatus ntag215_save_to_nfc(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
 
 #endif //LIBRFIDX_NTAG215_H
