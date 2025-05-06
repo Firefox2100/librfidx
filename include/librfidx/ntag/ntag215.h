@@ -60,7 +60,7 @@ typedef union {
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to load Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
 
 /**
  * @brief Saves NTAG215 data to a binary file
@@ -74,10 +74,10 @@ RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215,
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
 
-RfidxStatus ntag215_load_from_eml(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
-RfidxStatus ntag215_save_to_eml(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_load_from_eml(char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_save_to_eml(char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
 
 /**
  * @brief Parse a JSON string into NTAG215 data and header
@@ -90,7 +90,7 @@ RfidxStatus ntag215_save_to_eml(char *filename, Ntag215Data *ntag215, Ntag21xPro
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
 
 /**
  * @brief Load NTAG215 data from a JSON file
@@ -104,7 +104,7 @@ RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag2
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
 
 /**
  * @brief Serialize NTAG215 data and header to JSON string
@@ -115,7 +115,7 @@ RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, N
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return JSON string
  */
-char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header);
+char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
 
 /**
  * @brief Save NTAG215 data and header to a JSON file
@@ -129,10 +129,10 @@ char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xProxmarkHe
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
 
-RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
-RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
-RfidxStatus ntag215_save_to_nfc(char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header);
+RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_save_to_nfc(char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
 
 #endif //LIBRFIDX_NTAG215_H

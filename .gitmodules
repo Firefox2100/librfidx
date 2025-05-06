@@ -1,3 +1,6 @@
 [submodule "external/cjson"]
 	path = external/cjson
 	url = https://github.com/DaveGamble/cJSON.git
+[submodule "external/sanitizers-cmake"]
+	path = external/sanitizers-cmake
+	url = git@github.com:arsenm/sanitizers-cmake.git

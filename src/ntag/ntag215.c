@@ -15,7 +15,7 @@
 #include <ctype.h>
 #include "librfidx/ntag/ntag215.h"
 
-RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header) {
+RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
     FILE *file = fopen(filename, "rb");
 
     // Open the file
@@ -46,9 +46,9 @@ RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215,
             fclose(file);
             return RFIDX_BINARY_FILE_IO_ERROR;
         }
-    } else if (filesize == sizeof(Ntag215Data) + sizeof(Ntag21xProxmarkHeader)) {
+    } else if (filesize == sizeof(Ntag215Data) + sizeof(Ntag21xMetadataHeader)) {
         // Contain both the dump and header, header first
-        if (!fread(header, sizeof(Ntag21xProxmarkHeader), 1, file)) {
+        if (!fread(header, sizeof(Ntag21xMetadataHeader), 1, file)) {
             fclose(file);
             return RFIDX_BINARY_FILE_IO_ERROR;
         }
@@ -66,7 +66,7 @@ RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215,
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header) {
+RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {
     FILE *file = fopen(filename, "wb");
 
     if (!file) {
@@ -74,9 +74,9 @@ RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag
     }
 
     // If header is not NULL or 0s, write it to the file first
-    const uint8_t empty_header[sizeof(Ntag21xProxmarkHeader)] = {0};
-    if (header && memcmp(header, empty_header, sizeof(Ntag21xProxmarkHeader)) != 0) {
-        if (fwrite(header, sizeof(Ntag21xProxmarkHeader), 1, file) != 1) {
+    const uint8_t empty_header[sizeof(Ntag21xMetadataHeader)] = {0};
+    if (header && memcmp(header, empty_header, sizeof(Ntag21xMetadataHeader)) != 0) {
+        if (fwrite(header, sizeof(Ntag21xMetadataHeader), 1, file) != 1) {
             fclose(file);
             return RFIDX_BINARY_FILE_IO_ERROR;
         }
@@ -91,7 +91,7 @@ RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_parse_header_from_json(const cJSON *card_obj, Ntag21xProxmarkHeader *header) {
+RfidxStatus ntag215_parse_header_from_json(const cJSON *card_obj, Ntag21xMetadataHeader *header) {
     const cJSON *item = cJSON_GetObjectItem(card_obj, "Version");
     if (!item || !item->valuestring) {
         return RFIDX_JSON_PARSE_ERROR;
@@ -172,6 +172,8 @@ RfidxStatus ntag215_parse_header_from_json(const cJSON *card_obj, Ntag21xProxmar
         return RFIDX_JSON_PARSE_ERROR;
     }
 
+    header->memory_max = NTAG215_NUM_PAGES - 1;
+
     return RFIDX_OK;
 }
 
@@ -187,7 +189,7 @@ RfidxStatus ntag215_parse_data_from_json(const cJSON *blocks_obj, Ntag215Data *n
         if (!blk || !cJSON_IsString(blk)) {
             return RFIDX_JSON_PARSE_ERROR;
         }
-        if (hex_to_bytes(blk->valuestring, ntag215->pages[i * NTAG21X_PAGE_SIZE], 4) != RFIDX_OK) {
+        if (hex_to_bytes(blk->valuestring, ntag215->pages[i], 4) != RFIDX_OK) {
             return RFIDX_JSON_PARSE_ERROR;
         }
     }
@@ -195,7 +197,7 @@ RfidxStatus ntag215_parse_data_from_json(const cJSON *blocks_obj, Ntag215Data *n
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header) {
+RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
     cJSON *root = cJSON_Parse(json_str);
     if (!root) {
         return RFIDX_JSON_PARSE_ERROR;
@@ -228,7 +230,7 @@ RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag2
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header) {
+RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
     FILE *file = fopen(filename, "rb");
     if (!file) {
         return RFIDX_JSON_FILE_IO_ERROR;
@@ -263,7 +265,7 @@ RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, N
     return RFIDX_OK;
 }
 
-cJSON * ntag215_dump_header_to_json(const Ntag21xProxmarkHeader *header) {
+cJSON * ntag215_dump_header_to_json(const Ntag21xMetadataHeader *header) {
     cJSON *card_obj = cJSON_CreateObject();
     char hex[65];
 
@@ -312,7 +314,7 @@ cJSON * ntag215_dump_data_to_json(const Ntag215Data *ntag215) {
     return RFIDX_OK;
 }
 
-char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header) {
+char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {
     cJSON *root = cJSON_CreateObject();
     cJSON_AddStringToObject(root, "Created", "proxmark3");
     cJSON_AddStringToObject(root, "FileType", "mfu");
@@ -326,7 +328,7 @@ char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xProxmarkHe
     return output;
 }
 
-RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215, const Ntag21xProxmarkHeader *header) {
+RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {
     char *json_str = ntag215_serialize_json(ntag215, header);
     if (!json_str) {
         return RFIDX_JSON_PARSE_ERROR;
@@ -348,7 +350,7 @@ RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag21
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header) {
+RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
     const char* start = nfc_str;
     const char* end;
 
@@ -421,6 +423,8 @@ RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21x
                     header->counter2[2] = c & 0xFF;
                 } else if (strncmp(key, "Tearing 2", 9) == 0) {
                     header->tearing2 = (uint8_t)strtol(val, NULL, 16);
+                } else if (strncmp(key, "Pages total", 11) == 0) {
+                    header->memory_max = (uint8_t)strtol(val, NULL, 10) - 1;
                 } else if (strncmp(key, "Page ", 5) == 0) {
                     char *endptr;
                     uint32_t page = strtoul(key + 5, &endptr, 10);
@@ -447,7 +451,7 @@ RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21x
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xProxmarkHeader *header) {
+RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
     FILE* file = fopen(filename, "r");
     if (!file) {
         return RFIDX_NFC_FILE_IO_ERROR;

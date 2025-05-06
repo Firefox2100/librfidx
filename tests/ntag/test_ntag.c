@@ -9,12 +9,16 @@
 
 #include <check.h>
 
-extern TCase *ntag215_io_case(void);
+extern TCase *ntag215_binary_io_case(void);
+extern TCase *ntag215_json_io_case(void);
+extern TCase *ntag215_nfc_io_case(void);
 
 Suite *ntag_suite(void) {
     Suite *s = suite_create("NXP NTAG");
 
-    suite_add_tcase(s, ntag215_io_case());
+    suite_add_tcase(s, ntag215_binary_io_case());
+    suite_add_tcase(s, ntag215_json_io_case());
+    suite_add_tcase(s, ntag215_nfc_io_case());
 
     return s;
 }

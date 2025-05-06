@@ -48,7 +48,7 @@ typedef struct {
 
 #pragma pack(push, 1)
 /**
- * @brief Proxmark metadata header for NTAG21x family
+ * @brief Metadata header for NTAG21x family
  *
  * These bytes are read only after a tag is made, and are not part of the main
  * memory structure. They are read with NTAG-specific commands. Not all readers
@@ -66,7 +66,7 @@ typedef struct {
     uint8_t tearing1;           /**< Tearing flag 1, part of counter anti-tearing */
     uint8_t counter2[3];        /**< Counter 2, only operable with INCR command */
     uint8_t tearing2;           /**< Tearing flag 2, part of counter anti-tearing */
-} Ntag21xProxmarkHeader;
+} Ntag21xMetadataHeader;
 #pragma pack(pop)
 
 #endif //LIBRFIDX_NTAG21X_H
