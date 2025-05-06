@@ -20,11 +20,39 @@
 #define RFIDX_NUMERICAL_OPERATION_FAILED -5
 #define RFIDX_NFC_FILE_IO_ERROR -6
 #define RFIDX_NFC_PARSE_ERROR -7
+#define RFIDX_FILE_FORMAT_ERROR -8
 
 typedef uint32_t RfidxStatus;
+
+typedef enum {
+    TAG_UNSPECIFIED = 0,
+    NTAG_215,
+    TAG_UNKNOWN = -1,
+    TAG_ERROR = -2,
+} TagType;
+
+typedef struct {
+    const char *name;
+    TagType value;
+} TagTypeMap;
+
+static const TagTypeMap tag_type_map[] = {
+    {"ntag215", NTAG_215},
+};
+
+typedef enum {
+    FORMAT_BINARY = 0,
+    FORMAT_JSON,
+    FORMAT_NFC,
+    FORMAT_EML,
+    FORMAT_UNKNOWN,
+} FileFormat;
 
 RfidxStatus hex_to_bytes(const char *hex, uint8_t *out, size_t len);
 RfidxStatus bytes_to_hex(const uint8_t *bytes, size_t len, char *out);
 char* remove_whitespace(const char *str);
+TagType string_to_tag_type(const char *str);
+FileFormat string_to_file_format(const char *str);
+int appendf(char **buf, size_t *len, size_t *cap, const char *fmt, ...);
 
 #endif //LIBRFIDX_COMMON_H

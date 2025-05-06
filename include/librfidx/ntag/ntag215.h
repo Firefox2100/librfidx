@@ -63,6 +63,17 @@ typedef union {
 RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
 
 /**
+ * @brief Serialize NTAG215 data and header to binary
+ *
+ * Provided a NTAG215Data buffer and a signature buffer, this function
+ * processes the data and header into a binary format.
+ * @param ntag215 Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return Binary data
+ */
+uint8_t* ntag215_serialize_binary(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
+
+/**
  * @brief Saves NTAG215 data to a binary file
  *
  * Provided a path to save the binary file, a NTAG215Data buffer and a signature buffer,
@@ -131,8 +142,59 @@ char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xMetadataHe
  */
 RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
 
+/**
+ * @brief Parse a NFC string into NTAG215 data and header
+ *
+ * Provided a NFC string, a NTAG215Data buffer and a signature buffer, this function
+ * processes the NFC string and loads the data into the buffers. If the NFC string
+ * is malformed, or the data is not in the expected format, it will return an error.
+ * @param nfc_str The NFC string to parse.
+ * @param ntag215 Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return Status code
+ */
 RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+
+/**
+ * @brief Load NTAG215 data from a NFC file
+ *
+ * Provided a path to NFC file, a NTAG215Data buffer and a signature buffer,
+ * this function will load the data from the file into the buffers. If the file
+ * contains the signature, it will also be loaded. Returns error if the file
+ * can't be opened, or the size is wrong.
+ * @param filename Path to the NFC file.
+ * @param ntag215 Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return Status code
+ */
 RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
-RfidxStatus ntag215_save_to_nfc(char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+
+/**
+ * @brief Serialize NTAG215 data and header to NFC string
+ *
+ * Provided a NTAG215Data buffer and a signature buffer, this function
+ * processes the data and header into a NFC string.
+ * @param ntag215 Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return NFC string
+ */
+char* ntag215_serialize_nfc(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
+
+/**
+ * @brief Save NTAG215 data and header to a NFC file
+ *
+ * Provided a path to save the NFC file, a NTAG215Data buffer and a signature buffer,
+ * this function will save the data to the file system. If the signature pointer is not null,
+ * and the buffer is not full of 0x00, it will also be saved. Returns error if the file
+ * writing fails.
+ * @param filename Path to the NFC file.
+ * @param ntag215 Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return Status code
+ */
+RfidxStatus ntag215_save_to_nfc(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
+
+char *ntag215_transform_format(const Ntag215Data *data, const Ntag21xMetadataHeader *header, FileFormat output_format, const char *filename);
+RfidxStatus ntag215_read_from_file(const char *filename, Ntag215Data **data, Ntag21xMetadataHeader **header);
 
 #endif //LIBRFIDX_NTAG215_H

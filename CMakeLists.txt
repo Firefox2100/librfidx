@@ -26,6 +26,14 @@ target_include_directories(librfidx_static PUBLIC
 )
 target_link_libraries(librfidx_static PRIVATE cjson)
 
+add_executable(rfidx
+        src/rfidx.c
+)
+set_target_properties(rfidx PROPERTIES OUTPUT_NAME rfidx)
+target_link_libraries(rfidx
+        librfidx_shared
+)
+
 # ------------- UNIT TESTS SETUP -------------
 option(BUILD_TESTS "Build unit tests" ON)
 
@@ -48,6 +56,7 @@ if(BUILD_TESTS)
                 if (Sanitizers_FOUND)
                         message(STATUS "Sanitizers found: ${Sanitizers_FOUND}")
                         add_sanitizers(unit_test)
+                        add_sanitizers(librfidx_shared)
                 endif ()
 
                 target_include_directories(unit_test PRIVATE
