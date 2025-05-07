@@ -28,24 +28,29 @@ typedef uint8_t Ntag215Raw[NTAG215_NUM_PAGES][NTAG215_PAGE_SIZE];
 
 #pragma pack(push, 1)
 /**
- * @brief NTAG215 family manufacturer data and static lock bits
- *
- * These bytes are read only after a tag is made
+ * @brief NTAG215 data structure
  */
 typedef struct {
-    Ntag21xManufacturerData manufacturer_data;                          /**< Manufacturer data */
-    uint8_t capability[4];                                              /**< Capability container */
-    uint8_t user_memory[NTAG215_NUM_USER_PAGES][NTAG21X_PAGE_SIZE];     /** <User usable memory */
-    uint8_t dynamic_lock[3];                                            /**< Dynamic lock bits */
-    uint8_t reserved;                                                   /**< Reserved byte */
-    Ntag21xConfiguration configuration;                                 /**< Configuration data */
+    Ntag21xManufacturerData manufacturer_data; /**< Manufacturer data */
+    uint8_t capability[4]; /**< Capability container */
+    uint8_t user_memory[NTAG215_NUM_USER_PAGES][NTAG21X_PAGE_SIZE]; /** <User usable memory */
+    uint8_t dynamic_lock[3]; /**< Dynamic lock bits */
+    uint8_t reserved; /**< Reserved byte */
+    Ntag21xConfiguration configuration; /**< Configuration data */
 } Ntag215Structure;
 #pragma pack(pop)
 
+/**
+ * @brief NTAG215 data union overlay
+ *
+ * This structure contains the raw data, the bytes and the structured data
+ * of the NTAG215 tag. It is used to load and save the tag data in different
+ * formats.
+ */
 typedef union {
-    Ntag215Raw pages;
-    uint8_t bytes[NTAG215_TOTAL_BYTES];
-    Ntag215Structure structure;
+    Ntag215Raw pages; /**< Memory by page, 135 * 4 bytes */
+    uint8_t bytes[NTAG215_TOTAL_BYTES]; /**< Memory by byte, 540 bytes */
+    Ntag215Structure structure; /**< Memory by structure */
 } Ntag215Data;
 
 /**
@@ -60,7 +65,11 @@ typedef union {
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to load Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_load_from_binary(
+    const char *filename,
+    Ntag215Data *ntag215,
+    Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Serialize NTAG215 data and header to binary
@@ -71,7 +80,10 @@ RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215,
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Binary data
  */
-uint8_t* ntag215_serialize_binary(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
+uint8_t *ntag215_serialize_binary(
+    const Ntag215Data *ntag215,
+    const Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Saves NTAG215 data to a binary file
@@ -85,10 +97,22 @@ uint8_t* ntag215_serialize_binary(const Ntag215Data *ntag215, const Ntag21xMetad
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_save_to_binary(
+    const char *filename,
+    const Ntag215Data *ntag215,
+    const Ntag21xMetadataHeader *header
+);
 
-RfidxStatus ntag215_load_from_eml(char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
-RfidxStatus ntag215_save_to_eml(char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_load_from_eml(
+    char *filename,
+    Ntag215Data *ntag215,
+    Ntag21xMetadataHeader *header
+);
+RfidxStatus ntag215_save_to_eml(
+    char *filename,
+    Ntag215Data *ntag215,
+    Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Parse a JSON string into NTAG215 data and header
@@ -101,7 +125,11 @@ RfidxStatus ntag215_save_to_eml(char *filename, Ntag215Data *ntag215, Ntag21xMet
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_parse_json(
+    const char *json_str,
+    Ntag215Data *ntag215,
+    Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Load NTAG215 data from a JSON file
@@ -115,7 +143,11 @@ RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag2
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_load_from_json(
+    const char *filename,
+    Ntag215Data *ntag215,
+    Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Serialize NTAG215 data and header to JSON string
@@ -126,7 +158,10 @@ RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, N
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return JSON string
  */
-char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
+char *ntag215_serialize_json(
+    const Ntag215Data *ntag215,
+    const Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Save NTAG215 data and header to a JSON file
@@ -140,7 +175,11 @@ char* ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xMetadataHe
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_save_to_json(
+    const char *filename,
+    const Ntag215Data *ntag215,
+    const Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Parse a NFC string into NTAG215 data and header
@@ -153,7 +192,11 @@ RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag21
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_parse_nfc(
+    const char *nfc_str,
+    Ntag215Data *ntag215,
+    Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Load NTAG215 data from a NFC file
@@ -167,7 +210,11 @@ RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21x
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_load_from_nfc(
+    const char *filename,
+    Ntag215Data *ntag215,
+    Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Serialize NTAG215 data and header to NFC string
@@ -178,7 +225,10 @@ RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Nt
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return NFC string
  */
-char* ntag215_serialize_nfc(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
+char *ntag215_serialize_nfc(
+    const Ntag215Data *ntag215,
+    const Ntag21xMetadataHeader *header
+);
 
 /**
  * @brief Save NTAG215 data and header to a NFC file
@@ -192,9 +242,47 @@ char* ntag215_serialize_nfc(const Ntag215Data *ntag215, const Ntag21xMetadataHea
  * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_save_to_nfc(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header);
+RfidxStatus ntag215_save_to_nfc(
+    const char *filename,
+    const Ntag215Data *ntag215,
+    const Ntag21xMetadataHeader *header
+);
 
-char *ntag215_transform_format(const Ntag215Data *data, const Ntag21xMetadataHeader *header, FileFormat output_format, const char *filename);
-RfidxStatus ntag215_read_from_file(const char *filename, Ntag215Data **data, Ntag21xMetadataHeader **header);
+/**
+ * @brief Transform NTAG215 data to a different format
+ *
+ * Provided a NTAG215Data buffer and a signature buffer, this function
+ * processes the data and header into a different format. The output format
+ * can be specified as an enum value.
+ * @param data Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @param output_format The output format to transform to.
+ * @param filename Path to the output file.
+ * @return Transformed data
+ */
+char *ntag215_transform_format(
+    const Ntag215Data *data,
+    const Ntag21xMetadataHeader *header,
+    FileFormat output_format,
+    const char *filename
+);
+
+/**
+ * @brief Read NTAG215 data from a file
+ *
+ * Provided a path to a file, a NTAG215Data buffer and a signature buffer,
+ * this function will read the data from the file into the buffers. If the file
+ * contains the signature, it will also be loaded. Returns error if the file
+ * can't be opened, or the size is wrong.
+ * @param filename Path to the file.
+ * @param data Pointer to the NTAG215Data data.
+ * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @return Status code
+ */
+RfidxStatus ntag215_read_from_file(
+    const char *filename,
+    Ntag215Data **data,
+    Ntag21xMetadataHeader **header
+);
 
 #endif //LIBRFIDX_NTAG215_H
