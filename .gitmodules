@@ -3,4 +3,7 @@
 	url = https://github.com/DaveGamble/cJSON.git
 [submodule "external/sanitizers-cmake"]
 	path = external/sanitizers-cmake
-	url = git@github.com:arsenm/sanitizers-cmake.git
+	url = https://github.com/arsenm/sanitizers-cmake.git
+[submodule "external/mbedtls"]
+	path = external/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls.git
