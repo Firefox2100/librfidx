@@ -54,6 +54,7 @@ target_link_libraries(rfidx
 
 # ------------- UNIT TESTS SETUP -------------
 option(BUILD_TESTS "Build unit tests" ON)
+option(ENABLE_SANITIZERS "Enable sanitizers if available (disabled in Release mode)" OFF)
 
 if(BUILD_TESTS)
         find_package(PkgConfig QUIET)
@@ -67,15 +68,22 @@ if(BUILD_TESTS)
                 enable_testing()
 
                 file(GLOB_RECURSE TEST_SOURCE tests/*.c)
-
                 add_executable(unit_test ${TEST_SOURCE})
 
-                find_package(Sanitizers QUIET)
-                if (Sanitizers_FOUND)
-                        message(STATUS "Sanitizers found: ${Sanitizers_FOUND}")
-                        add_sanitizers(unit_test)
-                        add_sanitizers(librfidx_shared)
-                endif ()
+                # Only use sanitizers if enabled and not in Release mode
+                if(ENABLE_SANITIZERS AND NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+                        message(STATUS "Sanitizers are enabled. Do not run with Valgrind!")
+                        find_package(Sanitizers QUIET)
+                        if(Sanitizers_FOUND)
+                                message(STATUS "Sanitizers enabled and found: ${Sanitizers_FOUND}")
+                                add_sanitizers(unit_test)
+                                add_sanitizers(librfidx_shared)
+                        endif()
+                else()
+                        if(ENABLE_SANITIZERS)
+                                message(STATUS "Sanitizers are enabled but skipped due to Release build.")
+                        endif()
+                endif()
 
                 target_include_directories(unit_test PRIVATE
                         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -87,7 +95,6 @@ if(BUILD_TESTS)
                         ${Check_LIBRARIES}
                 )
                 target_compile_definitions(unit_test PRIVATE UNIT_TESTING)
-
                 target_compile_options(unit_test PRIVATE -g -O0)
 
                 file(COPY ${CMAKE_SOURCE_DIR}/tests/assets
