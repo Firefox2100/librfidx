@@ -24,13 +24,24 @@ jobs:
       - name: Install Build Wrapper
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y check pkg-config gcovr lcov
+
       - name: Run Build Wrapper
         run: |
           cmake -S . -B build -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_C_FLAGS="--coverage -fprofile-abs-path" \
             -DCMAKE_EXE_LINKER_FLAGS="--coverage -fprofile-abs-path"
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build
+          build-wrapper-linux-x86-64 --out-dir ${{ env.KEY_RETAIL_ENCODED }} cmake --build build
+
+      - name: Restore key file
+        run: |
+          echo "$KEY_RETAIL_ENCODED" | base64 -d > build/tests/assets/key_retail.bin
+        env:
+          KEY_RETAIL_ENCODED: ${{ secrets.KEY_RETAIL_ENCODED }}
 
       - name: Run Tests
         run: |
