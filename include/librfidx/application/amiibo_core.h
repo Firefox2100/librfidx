@@ -140,4 +140,12 @@ RfidxStatus amiibo_sign_payload(
     AmiiboData* amiibo_data
 );
 
+_Static_assert(sizeof(DumpedKeySingle) == 80, "Amiibo single key size mismatch");
+_Static_assert(sizeof(DumpedKeys) == 160, "Amiibo combined key size mismatch");
+_Static_assert(sizeof(AmiiboTagConfig) == 32, "Amiibo tag configuration size mismatch");
+_Static_assert(sizeof(AmiiboModelInfo) == 12, "Amiibo model information size mismatch");
+_Static_assert(sizeof(AmiiboApplicationData) == 360, "Amiibo application data size mismatch");
+_Static_assert(sizeof(AmiiboStructure) == 540, "Amiibo data size mismatch");
+_Static_assert(sizeof(AmiiboData) == 540, "Amiibo data union size mismatch");
+
 #endif //LIBRFIDX_AMIIBO_CORE_H

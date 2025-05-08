@@ -136,4 +136,8 @@ char *ntag215_serialize_nfc(
     const Ntag21xMetadataHeader *header
 );
 
+_Static_assert(sizeof(Ntag215Raw) == NTAG215_TOTAL_BYTES, "NTAG215 raw data size mismatch");
+_Static_assert(sizeof(Ntag215Structure) == NTAG215_TOTAL_BYTES, "NTAG215 structure size mismatch");
+_Static_assert(sizeof(Ntag215Data) == NTAG215_TOTAL_BYTES, "NTAG215 data size mismatch");
+
 #endif //LIBRFIDX_NTAG215_CORE_H

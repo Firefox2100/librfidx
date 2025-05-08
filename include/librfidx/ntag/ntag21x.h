@@ -78,4 +78,8 @@ RfidxStatus ntag21x_randomize_uid(
     Ntag21xManufacturerData *manufacturer_data
 );
 
+_Static_assert(sizeof(Ntag21xManufacturerData) == NTAG21X_PAGE_SIZE * 3, "NTAG21x manufacturer data size mismatch");
+_Static_assert(sizeof(Ntag21xConfiguration) == NTAG21X_PAGE_SIZE * 4, "NTAG21x configuration size mismatch");
+_Static_assert(sizeof(Ntag21xMetadataHeader) == NTAG21X_PAGE_SIZE * 14, "NTAG21x metadata header size mismatch");
+
 #endif //LIBRFIDX_NTAG21X_H
