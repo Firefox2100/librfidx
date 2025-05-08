@@ -21,6 +21,7 @@
 #define RFIDX_NFC_FILE_IO_ERROR -6
 #define RFIDX_NFC_PARSE_ERROR -7
 #define RFIDX_FILE_FORMAT_ERROR -8
+#define RFIDX_MEMORY_ERROR -9
 
 typedef uint32_t RfidxStatus;
 
@@ -53,6 +54,7 @@ RfidxStatus bytes_to_hex(const uint8_t *bytes, size_t len, char *out);
 char* remove_whitespace(const char *str);
 TagType string_to_tag_type(const char *str);
 FileFormat string_to_file_format(const char *str);
+void uint_to_str(unsigned int val, char *out, size_t out_size);
 int appendf(char **buf, size_t *len, size_t *cap, const char *fmt, ...);
 
 #endif //LIBRFIDX_COMMON_H

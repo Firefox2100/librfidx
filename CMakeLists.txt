@@ -7,7 +7,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/sanitizers-cmake/cmake" ${CM
 
 set(ENABLE_CJSON_TEST OFF CACHE BOOL "" FORCE)
 add_subdirectory(external/cjson)
-file(GLOB_RECURSE SOURCES src/*.c)
 
 set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
@@ -15,6 +14,16 @@ set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
 set(MBEDTLS_USER_CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/config/mbedtls_config.h")
 add_compile_definitions(MBEDTLS_CONFIG_FILE="${MBEDTLS_USER_CONFIG_FILE}")
 add_subdirectory(external/mbedtls)
+
+option(NO_PLATFORM "Disable platform-dependent code" OFF)
+
+file(GLOB_RECURSE CORE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.c)
+if(NO_PLATFORM)
+        set(PLATFORM_SOURCES "")  # No platform-specific sources
+else()
+        file(GLOB_RECURSE PLATFORM_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/*.c)
+endif()
+set(SOURCES ${CORE_SOURCES} ${PLATFORM_SOURCES})
 
 add_library(librfidx_shared SHARED ${SOURCES})
 set_target_properties(librfidx_shared PROPERTIES OUTPUT_NAME rfidx)
@@ -45,7 +54,7 @@ target_link_libraries(librfidx_static PRIVATE
 )
 
 add_executable(rfidx
-        src/rfidx.c
+        src/platform/rfidx.c
 )
 set_target_properties(rfidx PROPERTIES OUTPUT_NAME rfidx)
 target_link_libraries(rfidx

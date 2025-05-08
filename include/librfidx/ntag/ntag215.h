@@ -10,48 +10,9 @@
 #ifndef LIBRFIDX_NTAG215_H
 #define LIBRFIDX_NTAG215_H
 
-#include <stdint.h>
-#include "librfidx/common.h"
-#include "librfidx/ntag/ntag21x.h"
+#include "librfidx/ntag/ntag215_core.h"
 
-#define NTAG215_PAGE_SIZE NTAG21X_PAGE_SIZE
-#define NTAG215_NUM_PAGES 135
-#define NTAG215_NUM_USER_PAGES 126
-#define NTAG215_TOTAL_BYTES (NTAG215_PAGE_SIZE * NTAG215_NUM_PAGES)
-
-/**
- * @brief NTAG215 raw data structure
- *
- * Raw data structure: 135 pages of 4 bytes each
- */
-typedef uint8_t Ntag215Raw[NTAG215_NUM_PAGES][NTAG215_PAGE_SIZE];
-
-#pragma pack(push, 1)
-/**
- * @brief NTAG215 data structure
- */
-typedef struct {
-    Ntag21xManufacturerData manufacturer_data; /**< Manufacturer data */
-    uint8_t capability[4]; /**< Capability container */
-    uint8_t user_memory[NTAG215_NUM_USER_PAGES][NTAG21X_PAGE_SIZE]; /** <User usable memory */
-    uint8_t dynamic_lock[3]; /**< Dynamic lock bits */
-    uint8_t reserved; /**< Reserved byte */
-    Ntag21xConfiguration configuration; /**< Configuration data */
-} Ntag215Structure;
-#pragma pack(pop)
-
-/**
- * @brief NTAG215 data union overlay
- *
- * This structure contains the raw data, the bytes and the structured data
- * of the NTAG215 tag. It is used to load and save the tag data in different
- * formats.
- */
-typedef union {
-    Ntag215Raw pages; /**< Memory by page, 135 * 4 bytes */
-    uint8_t bytes[NTAG215_TOTAL_BYTES]; /**< Memory by byte, 540 bytes */
-    Ntag215Structure structure; /**< Memory by structure */
-} Ntag215Data;
+#ifndef LIBRFIDX_NO_PLATFORM
 
 /**
  * @brief Load NTAG215 data from a binary file
@@ -69,20 +30,6 @@ RfidxStatus ntag215_load_from_binary(
     const char *filename,
     Ntag215Data *ntag215,
     Ntag21xMetadataHeader *header
-);
-
-/**
- * @brief Serialize NTAG215 data and header to binary
- *
- * Provided a NTAG215Data buffer and a signature buffer, this function
- * processes the data and header into a binary format.
- * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
- * @return Binary data
- */
-uint8_t *ntag215_serialize_binary(
-    const Ntag215Data *ntag215,
-    const Ntag21xMetadataHeader *header
 );
 
 /**
@@ -115,23 +62,6 @@ RfidxStatus ntag215_save_to_eml(
 );
 
 /**
- * @brief Parse a JSON string into NTAG215 data and header
- *
- * Provided a JSON string, a NTAG215Data buffer and a signature buffer, this function
- * processes the JSON string and loads the data into the buffers. If the JSON string
- * is malformed, or the data is not in the expected format, it will return an error.
- * @param json_str The JSON string to parse.
- * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
- * @return Status code
- */
-RfidxStatus ntag215_parse_json(
-    const char *json_str,
-    Ntag215Data *ntag215,
-    Ntag21xMetadataHeader *header
-);
-
-/**
  * @brief Load NTAG215 data from a JSON file
  *
  * Provided a path to JSON file, a NTAG215Data buffer and a signature buffer,
@@ -147,20 +77,6 @@ RfidxStatus ntag215_load_from_json(
     const char *filename,
     Ntag215Data *ntag215,
     Ntag21xMetadataHeader *header
-);
-
-/**
- * @brief Serialize NTAG215 data and header to JSON string
- *
- * Provided a NTAG215Data buffer and a signature buffer, this function
- * processes the data and header into a JSON string.
- * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
- * @return JSON string
- */
-char *ntag215_serialize_json(
-    const Ntag215Data *ntag215,
-    const Ntag21xMetadataHeader *header
 );
 
 /**
@@ -182,23 +98,6 @@ RfidxStatus ntag215_save_to_json(
 );
 
 /**
- * @brief Parse a NFC string into NTAG215 data and header
- *
- * Provided a NFC string, a NTAG215Data buffer and a signature buffer, this function
- * processes the NFC string and loads the data into the buffers. If the NFC string
- * is malformed, or the data is not in the expected format, it will return an error.
- * @param nfc_str The NFC string to parse.
- * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
- * @return Status code
- */
-RfidxStatus ntag215_parse_nfc(
-    const char *nfc_str,
-    Ntag215Data *ntag215,
-    Ntag21xMetadataHeader *header
-);
-
-/**
  * @brief Load NTAG215 data from a NFC file
  *
  * Provided a path to NFC file, a NTAG215Data buffer and a signature buffer,
@@ -214,20 +113,6 @@ RfidxStatus ntag215_load_from_nfc(
     const char *filename,
     Ntag215Data *ntag215,
     Ntag21xMetadataHeader *header
-);
-
-/**
- * @brief Serialize NTAG215 data and header to NFC string
- *
- * Provided a NTAG215Data buffer and a signature buffer, this function
- * processes the data and header into a NFC string.
- * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
- * @return NFC string
- */
-char *ntag215_serialize_nfc(
-    const Ntag215Data *ntag215,
-    const Ntag21xMetadataHeader *header
 );
 
 /**
@@ -284,5 +169,7 @@ RfidxStatus ntag215_read_from_file(
     Ntag215Data **data,
     Ntag21xMetadataHeader **header
 );
+
+#endif
 
 #endif //LIBRFIDX_NTAG215_H

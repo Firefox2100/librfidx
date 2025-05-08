@@ -7,99 +7,35 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-#include <stdbool.h>
-#include <cJSON.h>
 #include <ctype.h>
-#include "librfidx/ntag/ntag215.h"
+#include <cJSON.h>
+#include "librfidx/common.h"
+#include "librfidx/ntag/ntag215_core.h"
 
-RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
-    FILE *file = fopen(filename, "rb");
-
-    // Open the file
-    if (!file) {
-        return RFIDX_BINARY_FILE_IO_ERROR;
+RfidxStatus ntag215_parse_binary(const uint8_t *buffer, const size_t len, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
+    if (len == sizeof(Ntag215Data)) {
+        memcpy(ntag215, buffer, sizeof(Ntag215Data));
+        return RFIDX_OK;
     }
 
-    // Check the file size
-    if (fseek(file, 0, SEEK_END) != 0) {
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-    const long filesize = ftell(file);
-    if (filesize == -1L) {
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
+    if (len == sizeof(Ntag21xMetadataHeader) + sizeof(Ntag215Data)) {
+        memcpy(header, buffer, sizeof(Ntag21xMetadataHeader));
+        memcpy(ntag215, buffer + sizeof(Ntag21xMetadataHeader), sizeof(Ntag215Data));
+        return RFIDX_OK;
     }
 
-    // Rewind
-    if (fseek(file, 0, SEEK_SET) != 0) {
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-
-    if (filesize == sizeof(Ntag215Data)) {
-        // Contain only the dump data
-        if (!fread(ntag215, sizeof(Ntag215Data), 1, file)) {
-            fclose(file);
-            return RFIDX_BINARY_FILE_IO_ERROR;
-        }
-    } else if (filesize == sizeof(Ntag215Data) + sizeof(Ntag21xMetadataHeader)) {
-        // Contain both the dump and header, header first
-        if (!fread(header, sizeof(Ntag21xMetadataHeader), 1, file)) {
-            fclose(file);
-            return RFIDX_BINARY_FILE_IO_ERROR;
-        }
-
-        if (fread(ntag215, sizeof(Ntag215Data), 1, file) != 1) {
-            fclose(file);
-            return RFIDX_BINARY_FILE_IO_ERROR;
-        }
-    } else {
-        fclose(file);
-        return RFIDX_BINARY_FILE_SIZE_ERROR;
-    }
-
-    fclose(file);
-    return RFIDX_OK;
+    return RFIDX_BINARY_FILE_SIZE_ERROR;
 }
 
-uint8_t* ntag215_serialize_binary(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {
-    uint8_t *buffer = malloc(sizeof(Ntag215Data) + sizeof(Ntag21xMetadataHeader));
+uint8_t *ntag215_serialize_binary(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {
+    uint8_t *buffer = malloc(sizeof(Ntag21xMetadataHeader) + sizeof(Ntag215Data));
+    if (!buffer) return NULL;
 
     memcpy(buffer, header, sizeof(Ntag21xMetadataHeader));
     memcpy(buffer + sizeof(Ntag21xMetadataHeader), ntag215, sizeof(Ntag215Data));
-
     return buffer;
-}
-
-RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215,
-                                   const Ntag21xMetadataHeader *header) {
-    FILE *file = fopen(filename, "wb");
-
-    if (!file) {
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-
-    // If header is not NULL or 0s, write it to the file first
-    const uint8_t empty_header[sizeof(Ntag21xMetadataHeader)] = {0};
-    if (header && memcmp(header, empty_header, sizeof(Ntag21xMetadataHeader)) != 0) {
-        if (fwrite(header, sizeof(Ntag21xMetadataHeader), 1, file) != 1) {
-            fclose(file);
-            return RFIDX_BINARY_FILE_IO_ERROR;
-        }
-    }
-
-    if (fwrite(ntag215, sizeof(Ntag215Data), 1, file) != 1) {
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-
-    fclose(file);
-    return RFIDX_OK;
 }
 
 RfidxStatus ntag215_parse_header_from_json(const cJSON *card_obj, Ntag21xMetadataHeader *header) {
@@ -195,7 +131,7 @@ RfidxStatus ntag215_parse_data_from_json(const cJSON *blocks_obj, Ntag215Data *n
 
     for (int i = 0; i < NTAG215_NUM_USER_PAGES; i++) {
         char idx[8];
-        snprintf(idx, sizeof(idx), "%d", i);
+        uint_to_str(i, idx, sizeof(idx));
         const cJSON *blk = cJSON_GetObjectItem(blocks_obj, idx);
         if (!blk || !cJSON_IsString(blk)) {
             return RFIDX_JSON_PARSE_ERROR;
@@ -238,41 +174,6 @@ RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag2
 
     cJSON_Delete(root);
 
-    return RFIDX_OK;
-}
-
-RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
-    FILE *file = fopen(filename, "rb");
-    if (!file) {
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    fseek(file, 0, SEEK_END);
-    const long file_length = ftell(file);
-    rewind(file);
-
-    char *buffer = malloc(file_length + 1);
-    if (!buffer) {
-        fclose(file);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    if (fread(buffer, 1, file_length, file) != (size_t) file_length) {
-        fclose(file);
-        free(buffer);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    buffer[file_length] = '\0';
-    fclose(file);
-
-    const RfidxStatus parsing_status = ntag215_parse_json(buffer, ntag215, header);
-    if (parsing_status != RFIDX_OK) {
-        free(buffer);
-        return parsing_status;
-    }
-
-    free(buffer);
     return RFIDX_OK;
 }
 
@@ -328,7 +229,7 @@ cJSON *ntag215_dump_data_to_json(const Ntag215Data *ntag215) {
         bytes_to_hex(ntag215->pages[i], 4, hex);
         hex[8] = '\0';
         char idx[8];
-        snprintf(idx, sizeof(idx), "%d", i);
+        uint_to_str(i, idx, sizeof(idx));
         cJSON_AddStringToObject(blocks_obj, idx, hex);
     }
 
@@ -347,29 +248,6 @@ char *ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xMetadataHe
     cJSON_Delete(root);
 
     return output;
-}
-
-RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215,
-                                 const Ntag21xMetadataHeader *header) {
-    char *json_str = ntag215_serialize_json(ntag215, header);
-    if (!json_str) {
-        return RFIDX_JSON_PARSE_ERROR;
-    }
-
-    FILE *file = fopen(filename, "w");
-    if (!file) {
-        free(json_str);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    if (fputs(json_str, file) == EOF) {
-        fclose(file);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    fclose(file);
-    free(json_str);
-    return RFIDX_OK;
 }
 
 RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
@@ -473,36 +351,6 @@ RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21x
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        return RFIDX_NFC_FILE_IO_ERROR;
-    }
-
-    fseek(file, 0, SEEK_END);
-    const long file_length = ftell(file);
-    rewind(file);
-
-    char *buffer = malloc(file_length + 1);
-    if (!buffer) {
-        fclose(file);
-        return RFIDX_NFC_FILE_IO_ERROR;
-    }
-
-    if (fread(buffer, 1, file_length, file) != (size_t) file_length) {
-        fclose(file);
-        free(buffer);
-        return RFIDX_NFC_FILE_IO_ERROR;
-    }
-
-    buffer[file_length] = '\0';
-    fclose(file);
-
-    const RfidxStatus parsing_status = ntag215_parse_nfc(buffer, ntag215, header);
-    free(buffer);
-    return parsing_status;
-}
-
 char *ntag215_serialize_nfc(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {
     size_t cap = 1024, len = 0;
     char *buf = malloc(cap);
@@ -557,92 +405,4 @@ char *ntag215_serialize_nfc(const Ntag215Data *ntag215, const Ntag21xMetadataHea
     appendf(&buf, &len, &cap, "Failed authentication attempts: 0\n");
 
     return buf;
-}
-
-RfidxStatus ntag215_save_to_nfc(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {
-    char *json_str = ntag215_serialize_nfc(ntag215, header);
-    if (!json_str) {
-        return RFIDX_JSON_PARSE_ERROR;
-    }
-
-    FILE *file = fopen(filename, "w");
-    if (!file) {
-        free(json_str);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    if (fputs(json_str, file) == EOF) {
-        fclose(file);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    fclose(file);
-    free(json_str);
-    return RFIDX_OK;
-}
-
-char *ntag215_transform_format(const Ntag215Data *data, const Ntag21xMetadataHeader *header, const FileFormat output_format, const char *filename) {
-    const bool save_to_file = (filename != NULL) && (strlen(filename) > 0);
-
-    switch (output_format) {
-        case FORMAT_BINARY:
-            if (save_to_file) {
-                ntag215_save_to_binary(filename, data, header);
-            } else {
-                uint8_t *buffer = ntag215_serialize_binary(data, header);
-
-                char *hex_str = malloc((sizeof(Ntag215Data) + sizeof(Ntag21xMetadataHeader)) * 2 + 1);
-                if (!hex_str) {
-                    free(buffer);
-                    return NULL;
-                }
-                for (size_t i = 0; i < sizeof(Ntag215Data) + sizeof(Ntag21xMetadataHeader); i++) {
-                    sprintf(hex_str + i * 2, "%02X", buffer[i]);
-                }
-
-                free(buffer);
-                return hex_str;
-            }
-        case FORMAT_JSON:
-            if (save_to_file) {
-                ntag215_save_to_json(filename, data, header);
-            } else {
-                return ntag215_serialize_json(data, header);
-            }
-        case FORMAT_NFC:
-            if (save_to_file) {
-                ntag215_save_to_nfc(filename, data, header);
-            } else {
-                return ntag215_serialize_nfc(data, header);
-            }
-        default:
-            return NULL;
-    }
-}
-
-RfidxStatus ntag215_read_from_file(const char *filename, Ntag215Data **data, Ntag21xMetadataHeader **header) {
-    // Determine the suffix of the file
-    const char *suffix = strrchr(filename, '.');
-    if (!suffix) {
-        return RFIDX_FILE_FORMAT_ERROR;
-    }
-    if (strcmp(suffix, ".bin") == 0) {
-        *data = malloc(sizeof(Ntag215Data));
-        *header = malloc(sizeof(Ntag21xMetadataHeader));
-        return ntag215_load_from_binary(filename, *data, *header);
-    }
-
-    if (strcmp(suffix, ".json") == 0) {
-        *data = malloc(sizeof(Ntag215Data));
-        *header = malloc(sizeof(Ntag21xMetadataHeader));
-        return ntag215_load_from_json(filename, *data, *header);
-    }
-
-    if (strcmp(suffix, ".nfc") == 0) {
-        *data = malloc(sizeof(Ntag215Data));
-        *header = malloc(sizeof(Ntag21xMetadataHeader));
-        return ntag215_load_from_nfc(filename, *data, *header);
-    }
-
-    return RFIDX_FILE_FORMAT_ERROR;
 }

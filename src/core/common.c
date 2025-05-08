@@ -87,6 +87,22 @@ FileFormat string_to_file_format(const char *str) {
     return FORMAT_UNKNOWN;
 }
 
+void uint_to_str(unsigned int val, char *out, const size_t out_size) {
+    if (out_size == 0) return;
+
+    out[out_size - 1] = '\0';  // ensure null-termination
+    int pos = (int)out_size - 2;
+    do {
+        if (pos < 0) {
+            out[0] = '\0'; // buffer too small
+            return;
+        }
+        out[pos--] = (char)('0' + (val % 10));
+        val /= 10;
+    } while (val > 0);
+    memmove(out, &out[pos + 1], out_size - pos - 1);
+}
+
 int appendf(char **buf, size_t *len, size_t *cap, const char *fmt, ...) {
     va_list args;
     while (1) {
