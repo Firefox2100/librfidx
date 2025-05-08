@@ -11,9 +11,12 @@
 #define LIBRFIDX_NTAG21X_H
 
 #include <stdint.h>
+#include "librfidx/common.h"
 #include "librfidx/ntag/ntag_common.h"
 
 #define NTAG21X_PAGE_SIZE 4
+
+#define RFIDX_NTAG21X_UID_ERROR -2048
 
 #pragma pack(push, 1)
 /**
@@ -68,5 +71,11 @@ typedef struct {
     uint8_t tearing2;           /**< Tearing flag 2, part of counter anti-tearing */
 } Ntag21xMetadataHeader;
 #pragma pack(pop)
+
+RfidxStatus ntag21x_validate_manufacturer_data(const Ntag21xManufacturerData *manufacturer_data);
+RfidxStatus ntag21x_randomize_uid(
+    unsigned int r_seed,
+    Ntag21xManufacturerData *manufacturer_data
+);
 
 #endif //LIBRFIDX_NTAG21X_H

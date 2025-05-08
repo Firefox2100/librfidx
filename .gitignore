@@ -52,5 +52,5 @@ Mkfile.old
 dkms.conf
 
 # Build and debug
-/cmake-build-debug/
+/cmake-build-*/
 /build/

@@ -147,6 +147,28 @@ START_TEST(test_load_json_dump_real) {
 }
 END_TEST
 
+START_TEST(test_save_json_dump_and_reload) {
+    const char filename[] = "tests/assets/ntag215.json";
+    char tmp_filename[] = "/tmp/ntagtestXXXXXX";
+    const int fd = mkstemp(tmp_filename);
+    ck_assert_msg(fd != -1, "Failed to create temp file");
+
+    Ntag215Data loaded_data = {0};
+    Ntag21xMetadataHeader loaded_header = {0};
+
+    RfidxStatus status = ntag215_load_from_json(filename, &loaded_data, &loaded_header);
+    ck_assert_int_eq(status, RFIDX_OK);
+
+    status = ntag215_save_to_json(tmp_filename, &loaded_data, &loaded_header);
+    ck_assert_int_eq(status, RFIDX_OK);
+
+    status = ntag215_load_from_json(tmp_filename, &loaded_data, &loaded_header);
+    ck_assert_int_eq(status, RFIDX_OK);
+
+    assert_header_correct(&loaded_header);
+}
+END_TEST
+
 START_TEST(test_load_nfc_dump_real) {
     const char filename[] = "tests/assets/ntag215.nfc";
     Ntag215Data loaded_data = {0};
@@ -159,6 +181,27 @@ START_TEST(test_load_nfc_dump_real) {
     assert_header_correct(&loaded_header);
 }
 END_TEST
+
+START_TEST(test_save_nfc_dump_and_reload) {
+    const char filename[] = "tests/assets/ntag215.nfc";
+    char tmp_filename[] = "/tmp/ntagtestXXXXXX";
+    const int fd = mkstemp(tmp_filename);
+    ck_assert_msg(fd != -1, "Failed to create temp file");
+
+    Ntag215Data loaded_data = {0};
+    Ntag21xMetadataHeader loaded_header = {0};
+
+    RfidxStatus status = ntag215_load_from_nfc(filename, &loaded_data, &loaded_header);
+    ck_assert_int_eq(status, RFIDX_OK);
+
+    status = ntag215_save_to_nfc(tmp_filename, &loaded_data, &loaded_header);
+    ck_assert_int_eq(status, RFIDX_OK);
+
+    status = ntag215_load_from_nfc(tmp_filename, &loaded_data, &loaded_header);
+    ck_assert_int_eq(status, RFIDX_OK);
+
+    assert_header_correct(&loaded_header);
+}
 
 TCase *ntag215_binary_io_case(void) {
     TCase *tc = tcase_create("Ntag215 Binary IO");
@@ -173,6 +216,7 @@ TCase *ntag215_binary_io_case(void) {
 TCase *ntag215_json_io_case(void) {
     TCase *tc = tcase_create("Ntag215 JSON IO");
     tcase_add_test(tc, test_load_json_dump_real);
+    tcase_add_test(tc, test_save_json_dump_and_reload);
 
     return tc;
 }
@@ -180,6 +224,7 @@ TCase *ntag215_json_io_case(void) {
 TCase *ntag215_nfc_io_case(void) {
     TCase *tc = tcase_create("Ntag215 NFC IO");
     tcase_add_test(tc, test_load_nfc_dump_real);
+    tcase_add_test(tc, test_save_nfc_dump_and_reload);
 
     return tc;
 }

@@ -13,6 +13,7 @@
 #include "librfidx/ntag/ntag215.h"
 
 #define RFIDX_AMIIBO_KEY_IO_ERROR -1024
+#define RFIDX_AMIIBO_HMAC_VALIDATION_ERROR -1025
 
 #pragma pack(push, 1)
 typedef struct {
@@ -121,5 +122,22 @@ RfidxStatus amiibo_derive_key(
 );
 
 RfidxStatus amiibo_cipher(const DerivedKey *data_key, AmiiboData* amiibo_data);
+RfidxStatus amiibo_generate_signature(
+    const DerivedKey *tag_key,
+    const DerivedKey *data_key,
+    const AmiiboData* amiibo_data,
+    uint8_t *tag_hash,
+    uint8_t *data_hash
+);
+RfidxStatus amiibo_validate_signature(
+    const DerivedKey *tag_key,
+    const DerivedKey *data_key,
+    const AmiiboData* amiibo_data
+);
+RfidxStatus amiibo_sign_payload(
+    const DerivedKey *tag_key,
+    const DerivedKey *data_key,
+    AmiiboData* amiibo_data
+);
 
 #endif //LIBRFIDX_AMIIBO_CORE_H

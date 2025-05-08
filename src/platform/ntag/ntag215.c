@@ -90,6 +90,10 @@ RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, N
 
     fseek(file, 0, SEEK_END);
     const long file_length = ftell(file);
+    if (file_length <= 0) {
+        fclose(file);
+        return RFIDX_JSON_FILE_IO_ERROR;
+    }
     rewind(file);
 
     char *buffer = malloc(file_length + 1);
@@ -148,6 +152,10 @@ RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Nt
 
     fseek(file, 0, SEEK_END);
     const long file_length = ftell(file);
+    if (file_length <= 0) {
+        fclose(file);
+        return RFIDX_JSON_FILE_IO_ERROR;
+    }
     rewind(file);
 
     char *buffer = malloc(file_length + 1);

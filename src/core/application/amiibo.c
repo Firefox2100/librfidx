@@ -50,7 +50,7 @@ RfidxStatus amiibo_derive_key(
     curr += leadingSeedBytes;
     memcpy(curr, input_key->magicBytes, input_key->magicBytesSize);
     curr += input_key->magicBytesSize;
-    memcpy(curr, amiibo_data->amiibo.manufacturer_data.uid0, 8);
+    memcpy(curr, &amiibo_data->amiibo.manufacturer_data, 8);
     memcpy(curr + 8, amiibo_data->amiibo.manufacturer_data.uid0, 8);
     curr += 16;
 
@@ -127,4 +127,86 @@ RfidxStatus amiibo_cipher(const DerivedKey *data_key, AmiiboData* amiibo_data) {
     memcpy(&amiibo_data->amiibo.data, out_buffer + sizeof(AmiiboTagConfig), sizeof(AmiiboApplicationData));
 
     return RFIDX_OK;
+}
+
+RfidxStatus amiibo_generate_signature(
+    const DerivedKey *tag_key,
+    const DerivedKey *data_key,
+    const AmiiboData* amiibo_data,
+    uint8_t *tag_hash,
+    uint8_t *data_hash
+) {
+    uint8_t signing_buffer[480] = {0};
+    memcpy(signing_buffer, &amiibo_data->amiibo.fixed_a5, 36);
+    memcpy(signing_buffer + 36, amiibo_data->amiibo.data.bytes, 360);
+    memcpy(signing_buffer + 428, amiibo_data->amiibo.manufacturer_data.uid0, 8);
+    memcpy(signing_buffer + 436, amiibo_data->amiibo.model_info.bytes, 44);
+
+    mbedtls_md_hmac(
+        mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),
+        tag_key->hmacKey,
+        sizeof(tag_key->hmacKey),
+        signing_buffer + 428,
+        52,
+        tag_hash
+    );
+
+    memcpy(signing_buffer + 396, tag_hash, 32);
+
+    mbedtls_md_hmac(
+        mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),
+        data_key->hmacKey,
+        sizeof(data_key->hmacKey),
+        signing_buffer + 1,             // 1 byte offset, it does not take the fixed 0xA5 into calculation
+        479,
+        data_hash
+    );
+
+    return RFIDX_OK;
+}
+
+RfidxStatus amiibo_validate_signature(
+    const DerivedKey *tag_key,
+    const DerivedKey *data_key,
+    const AmiiboData* amiibo_data
+) {
+    uint8_t tag_hash[32];
+    uint8_t data_hash[32];
+
+    const RfidxStatus status = amiibo_generate_signature(
+        tag_key,
+        data_key,
+        amiibo_data,
+        tag_hash,
+        data_hash
+    );
+
+    if (status != RFIDX_OK) {
+        return status;
+    }
+
+    if (memcmp(tag_hash, amiibo_data->amiibo.tag_hash, 32) != 0) {
+        return RFIDX_AMIIBO_HMAC_VALIDATION_ERROR;
+    }
+    if (memcmp(data_hash, amiibo_data->amiibo.data_hash, 32) != 0) {
+        return RFIDX_AMIIBO_HMAC_VALIDATION_ERROR;
+    }
+
+    return RFIDX_OK;
+}
+
+RfidxStatus amiibo_sign_payload(
+    const DerivedKey *tag_key,
+    const DerivedKey *data_key,
+    AmiiboData* amiibo_data
+) {
+    const RfidxStatus status = amiibo_generate_signature(
+        tag_key,
+        data_key,
+        amiibo_data,
+        amiibo_data->amiibo.tag_hash,
+        amiibo_data->amiibo.data_hash
+    );
+
+    return status;
 }
