@@ -51,7 +51,7 @@ RfidxStatus amiibo_derive_key(
     memcpy(curr, input_key->magicBytes, input_key->magicBytesSize);
     curr += input_key->magicBytesSize;
     memcpy(curr, &amiibo_data->amiibo.manufacturer_data, 8);
-    memcpy(curr + 8, amiibo_data->amiibo.manufacturer_data.uid0, 8);
+    memcpy(curr + 8, &amiibo_data->amiibo.manufacturer_data, 8);
     curr += 16;
 
     for (unsigned int i = 0; i < 32; i++) {
@@ -137,7 +137,7 @@ RfidxStatus amiibo_generate_signature(
     uint8_t *data_hash
 ) {
     uint8_t signing_buffer[480] = {0};
-    memcpy(signing_buffer, &amiibo_data->amiibo.fixed_a5, 36);
+    memcpy(signing_buffer, amiibo_data->ntag215.bytes + 16, 36);
     memcpy(signing_buffer + 36, amiibo_data->amiibo.data.bytes, 360);
     memcpy(signing_buffer + 428, amiibo_data->amiibo.manufacturer_data.uid0, 8);
     memcpy(signing_buffer + 436, amiibo_data->amiibo.model_info.bytes, 44);

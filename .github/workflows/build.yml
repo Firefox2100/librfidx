@@ -1,0 +1,50 @@
+name: SonarCloud Code Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+    env:
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+
+      - name: Install Build Wrapper
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
+
+      - name: Run Build Wrapper
+        run: |
+          cmake -S . -B build -G "Unix Makefiles" \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_FLAGS="--coverage -fprofile-abs-path" \
+            -DCMAKE_EXE_LINKER_FLAGS="--coverage -fprofile-abs-path"
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build
+
+      - name: Run Tests
+        run: |
+          cd build
+          ./unit_test
+          mkdir coverage
+          cd coverage
+          find .. -name "*.o" | xargs gcov --preserve-paths
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json" \
+            --define sonar.cfamily.gcov.reportsPath="build/coverage"
