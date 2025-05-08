@@ -35,7 +35,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_C_FLAGS="--coverage -fprofile-abs-path" \
             -DCMAKE_EXE_LINKER_FLAGS="--coverage -fprofile-abs-path"
-          build-wrapper-linux-x86-64 --out-dir ${{ env.KEY_RETAIL_ENCODED }} cmake --build build
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build
 
       - name: Restore key file
         run: |
