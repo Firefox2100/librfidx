@@ -21,13 +21,13 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - name: Install Build Wrapper
-        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
-
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y check pkg-config gcovr lcov
+
+      - name: Install Build Wrapper
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
 
       - name: Run Build Wrapper
         run: |
