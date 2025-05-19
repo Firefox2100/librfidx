@@ -16,8 +16,6 @@
 
 #define NTAG21X_PAGE_SIZE 4
 
-#define RFIDX_NTAG21X_UID_ERROR -2048
-
 #pragma pack(push, 1)
 /**
  * @brief NTAG21x family manufacturer data and static lock bits

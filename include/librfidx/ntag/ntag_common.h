@@ -12,6 +12,8 @@
 
 #include <stdint.h>
 
+#define RFIDX_NTAG21X_UID_ERROR -2048
+
 #define NTAG_SIGNATURE_SIZE 32
 
 typedef uint8_t NtagSignature[NTAG_SIGNATURE_SIZE];
