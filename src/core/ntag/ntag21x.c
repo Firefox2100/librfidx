@@ -29,23 +29,33 @@ RfidxStatus ntag21x_validate_manufacturer_data(const Ntag21xManufacturerData *ma
     if (manufacturer_data->bcc1 != computed_bcc1) {
         return RFIDX_NTAG21X_UID_ERROR;
     }
+    if (manufacturer_data->internal != 0x48) {
+        // The internal byte is always 0x48 unless on unofficial chips
+        // Some systems validate it
+        return RFIDX_NTAG21X_FIXED_BYTES_ERROR;
+    }
 
     return RFIDX_OK;
 }
 
-RfidxStatus ntag21x_randomize_uid(
-    const unsigned int r_seed,
-    Ntag21xManufacturerData *manufacturer_data
-) {
-    srand(r_seed);
-
+RfidxStatus ntag21x_randomize_uid(Ntag21xManufacturerData *manufacturer_data) {
     manufacturer_data->uid0[0] = 0x04;
 
-    for (int i = 1; i < 3; i++) {
-        manufacturer_data->uid0[i] = rand() % 256;
+    if (!rfidx_rng_initialized) {
+        return RFIDX_DRNG_ERROR;
     }
+
+    uint8_t buffer[6];
+    const int ret = mbedtls_ctr_drbg_random(&rfidx_ctr_drbg, buffer, sizeof(buffer));
+    if (ret != 0) {
+        return RFIDX_DRNG_ERROR;
+    }
+
+    manufacturer_data->uid0[1] = buffer[0];
+    manufacturer_data->uid0[2] = buffer[1];
+
     for (int i = 0; i < 4; i++) {
-        manufacturer_data->uid1[i] = rand() % 256;
+        manufacturer_data->uid1[i] = buffer[i + 2];
     }
 
     manufacturer_data->bcc0 = manufacturer_data->uid0[0] ^

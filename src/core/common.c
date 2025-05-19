@@ -15,6 +15,10 @@
 #include <ctype.h>
 #include "librfidx/common.h"
 
+mbedtls_ctr_drbg_context rfidx_ctr_drbg;
+mbedtls_entropy_context rfidx_entropy;
+bool rfidx_rng_initialized = false;
+
 RfidxStatus hex_to_bytes(const char *hex, uint8_t *out, const size_t len) {
     if (!hex || !out) {
         return RFIDX_NUMERICAL_OPERATION_FAILED;
@@ -124,4 +128,43 @@ int appendf(char **buf, size_t *len, size_t *cap, const char *fmt, ...) {
         *buf = new_buf;
         *cap = new_cap;
     }
+}
+
+int rfidx_init_rng(
+    const mbedtls_entropy_f_source_ptr custom_entropy_func,
+    void *custom_entropy_param
+) {
+    if (rfidx_rng_initialized) {
+        return 0; // Already initialized. DO NOT REINITIALIZE.
+    }
+
+    const char *personalization = "rfidx_rng";
+    mbedtls_entropy_init(&rfidx_entropy);
+    mbedtls_ctr_drbg_init(&rfidx_ctr_drbg);
+
+    if (custom_entropy_func) {
+        mbedtls_entropy_add_source(
+            &rfidx_entropy,
+            custom_entropy_func,
+            custom_entropy_param,
+            32,
+            MBEDTLS_ENTROPY_SOURCE_STRONG
+        );
+    }
+
+    const int ret = mbedtls_ctr_drbg_seed(&rfidx_ctr_drbg,
+        mbedtls_entropy_func,
+        &rfidx_entropy,
+        (const unsigned char *)personalization,
+        strlen(personalization)
+    );
+
+    if (ret == 0) {
+        rfidx_rng_initialized = true;
+    } else {
+        mbedtls_entropy_free(&rfidx_entropy);
+        mbedtls_ctr_drbg_free(&rfidx_ctr_drbg);
+    }
+
+    return ret;
 }

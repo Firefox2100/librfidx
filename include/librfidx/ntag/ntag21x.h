@@ -71,10 +71,7 @@ typedef struct {
 #pragma pack(pop)
 
 RfidxStatus ntag21x_validate_manufacturer_data(const Ntag21xManufacturerData *manufacturer_data);
-RfidxStatus ntag21x_randomize_uid(
-    unsigned int r_seed,
-    Ntag21xManufacturerData *manufacturer_data
-);
+RfidxStatus ntag21x_randomize_uid(Ntag21xManufacturerData *manufacturer_data);
 
 _Static_assert(sizeof(Ntag21xManufacturerData) == NTAG21X_PAGE_SIZE * 3, "NTAG21x manufacturer data size mismatch");
 _Static_assert(sizeof(Ntag21xConfiguration) == NTAG21X_PAGE_SIZE * 4, "NTAG21x configuration size mismatch");

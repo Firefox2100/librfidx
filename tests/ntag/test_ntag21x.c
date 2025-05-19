@@ -60,7 +60,11 @@ START_TEST (test_randomize_uid)
         ck_abort_msg("Failed to read manufacturer data");
     }
 
-    RfidxStatus status = ntag21x_randomize_uid((unsigned)time(NULL), &manufacturer_data);
+    RfidxStatus status = rfidx_init_rng(NULL, NULL);
+    ck_assert(rfidx_rng_initialized);
+    ck_assert_int_eq(status, 0);
+
+    status = ntag21x_randomize_uid(&manufacturer_data);
     ck_assert_int_eq(status, RFIDX_OK);
 
     status = ntag21x_validate_manufacturer_data(&manufacturer_data);

@@ -406,3 +406,56 @@ char *ntag215_serialize_nfc(const Ntag215Data *ntag215, const Ntag21xMetadataHea
 
     return buf;
 }
+
+RfidxStatus ntag215_generate(Ntag215Data* ntag215, Ntag21xMetadataHeader *header) {
+    // Re-initialize the memory space
+    memset(ntag215, 0, sizeof(Ntag215Data));
+    memset(header, 0, sizeof(Ntag21xMetadataHeader));
+
+    // Generate UID
+    ntag21x_randomize_uid(&ntag215->structure.manufacturer_data);
+
+    return RFIDX_OK;
+}
+
+RfidxStatus ntag215_wipe(Ntag215Data* ntag215, Ntag21xMetadataHeader *header) {
+    // Reset all user memory pages
+    for (int i = 0; i < NTAG215_NUM_USER_PAGES; i++) {
+        memset(ntag215->structure.user_memory[i], 0, NTAG21X_PAGE_SIZE);
+    }
+
+    // Unlock all pages and wipe the password
+    memset(ntag215->structure.configuration.passwd, 0, 4);
+    memset(ntag215->structure.configuration.pack, 0, 2);
+    memset(ntag215->structure.dynamic_lock, 0, 3);
+
+    return RFIDX_OK;
+}
+
+RfidxStatus ntag215_transform_data(
+    Ntag215Data **ntag215,
+    Ntag21xMetadataHeader **header,
+    const TransformCommand command
+) {
+    switch (command) {
+        case TRANSFORM_NONE:
+            return RFIDX_OK;
+        case TRANSFORM_WIPE:
+            return ntag215_wipe(*ntag215, *header);
+        case TRANSFORM_GENERATE:
+            *ntag215 = malloc(sizeof(Ntag215Data));
+            if (!*ntag215) return RFIDX_MEMORY_ERROR;
+
+            *header = malloc(sizeof(Ntag21xMetadataHeader));
+            if (!*header) {
+                free(*ntag215);
+                return RFIDX_MEMORY_ERROR;
+            }
+
+            return ntag215_generate(*ntag215, *header);
+        case TRANSFORM_RANDOMIZE_UID:
+            return ntag21x_randomize_uid(&(*ntag215)->structure.manufacturer_data);
+        default:
+            return RFIDX_UNKNOWN_ENUM_ERROR;
+    }
+}

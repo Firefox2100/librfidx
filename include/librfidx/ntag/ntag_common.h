@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #define RFIDX_NTAG21X_UID_ERROR -2048
+#define RFIDX_NTAG21X_FIXED_BYTES_ERROR -2049
 
 #define NTAG_SIGNATURE_SIZE 32
 

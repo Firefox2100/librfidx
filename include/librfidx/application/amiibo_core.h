@@ -139,6 +139,23 @@ RfidxStatus amiibo_sign_payload(
     const DerivedKey *data_key,
     AmiiboData* amiibo_data
 );
+RfidxStatus amiibo_format_dump(AmiiboData* amiibo_data, Ntag21xMetadataHeader *header);
+RfidxStatus amiibo_generate(
+    const uint8_t *uuid,
+    AmiiboData *amiibo_data,
+    Ntag21xMetadataHeader *header
+);
+RfidxStatus amiibo_wipe(
+    AmiiboData *amiibo_data,
+    Ntag21xMetadataHeader *header
+);
+RfidxStatus amiibo_transform_data(
+    AmiiboData **amiibo_data,
+    Ntag21xMetadataHeader **header,
+    TransformCommand command,
+    const uint8_t *uuid,
+    const DumpedKeys *dumped_keys
+);
 
 _Static_assert(sizeof(DumpedKeySingle) == 80, "Amiibo single key size mismatch");
 _Static_assert(sizeof(DumpedKeys) == 160, "Amiibo combined key size mismatch");

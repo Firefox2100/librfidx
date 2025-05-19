@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "mbedtls/md.h"
@@ -209,4 +210,185 @@ RfidxStatus amiibo_sign_payload(
     );
 
     return status;
+}
+
+RfidxStatus amiibo_format_dump(AmiiboData* amiibo_data, Ntag21xMetadataHeader *header) {
+    // Tag manufacturer data
+    amiibo_data->ntag215.structure.manufacturer_data.internal = 0x48;
+    amiibo_data->ntag215.structure.manufacturer_data.lock[0] = 0x0F;
+    amiibo_data->ntag215.structure.manufacturer_data.lock[1] = 0xE0;
+
+    // Amiibo related fixed data. They are the same for all amiibo, but not
+    // on all NTAG215
+    amiibo_data->amiibo.fixed_a5 = 0xA5;
+    memcpy(amiibo_data->amiibo.dynamic_lock, "\x01\x00\x0F", 3);
+    amiibo_data->amiibo.reserved = 0xBD;
+    memcpy(amiibo_data->amiibo.configuration.cfg0, "\x00\x00\x00\x04", 4);
+    memcpy(amiibo_data->amiibo.configuration.cfg1, "\x5F\x00\x00\x00", 4);
+    memcpy(amiibo_data->amiibo.capability, "\xF1\x10\xFF\xEE", 4);
+
+    // Generate the tag password
+    amiibo_data->ntag215.structure.configuration.passwd[0] =
+        amiibo_data->ntag215.structure.manufacturer_data.uid0[1] ^
+            amiibo_data->ntag215.structure.manufacturer_data.uid1[0] ^ 0xAA;
+    amiibo_data->ntag215.structure.configuration.passwd[1] =
+        amiibo_data->ntag215.structure.manufacturer_data.uid0[2] ^
+            amiibo_data->ntag215.structure.manufacturer_data.uid1[1] ^ 0x55;
+    amiibo_data->ntag215.structure.configuration.passwd[2] =
+        amiibo_data->ntag215.structure.manufacturer_data.uid1[0] ^
+            amiibo_data->ntag215.structure.manufacturer_data.uid1[2] ^ 0xAA;
+    amiibo_data->ntag215.structure.configuration.passwd[3] =
+        amiibo_data->ntag215.structure.manufacturer_data.uid1[1] ^
+            amiibo_data->ntag215.structure.manufacturer_data.uid1[3] ^ 0x55;
+
+    // PACK
+    memcpy(amiibo_data->ntag215.structure.configuration.pack, "\x80\x80", 2);
+    memcpy(amiibo_data->ntag215.structure.configuration.reserved, "\x00\x00", 2);
+
+    // Metadata header
+    memcpy(header->version, "\x00\x04\x04\x02\x01\x00\x11\x03", 8);
+    header->memory_max = 134;
+
+    return RFIDX_OK;
+}
+
+RfidxStatus amiibo_generate(
+    const uint8_t *uuid,
+    AmiiboData* amiibo_data,
+    Ntag21xMetadataHeader *header
+) {
+    // Re-initialize the memory space
+    memset(amiibo_data, 0, sizeof(AmiiboData));
+    memset(header, 0, sizeof(Ntag21xMetadataHeader));
+
+    const int ret = mbedtls_ctr_drbg_random(
+        &rfidx_ctr_drbg,
+        amiibo_data->amiibo.keygen_salt,
+        sizeof(amiibo_data->amiibo.keygen_salt)
+    );
+    if (ret != 0) {
+        return RFIDX_DRNG_ERROR;
+    }
+
+    // Set the UUID
+    memcpy(amiibo_data->amiibo.model_info.bytes, uuid, 8);
+
+    ntag21x_randomize_uid(&amiibo_data->ntag215.structure.manufacturer_data);
+
+    // Format the dump
+    amiibo_format_dump(amiibo_data, header);
+
+    return RFIDX_OK;
+}
+
+RfidxStatus amiibo_wipe(
+    AmiiboData* amiibo_data,
+    Ntag21xMetadataHeader *header
+) {
+    // Clear application data
+    memset(&amiibo_data->amiibo.data, 0, sizeof(AmiiboApplicationData));
+
+    return RFIDX_OK;
+}
+
+RfidxStatus amiibo_transform_data(
+    AmiiboData **amiibo_data,
+    Ntag21xMetadataHeader **header,
+    TransformCommand command,
+    const uint8_t *uuid,
+    const DumpedKeys *dumped_keys
+) {
+    if (command == TRANSFORM_NONE) {
+        // Return early
+        return RFIDX_OK;
+    }
+
+    if (command == TRANSFORM_GENERATE) {
+        // Prepare the data first due to no input
+        *amiibo_data = malloc(sizeof(AmiiboData));
+        if (!*amiibo_data) {
+            return RFIDX_MEMORY_ERROR;
+        }
+
+        *header = malloc(sizeof(Ntag21xMetadataHeader));
+        if (!*header) {
+            free(*amiibo_data);
+            return RFIDX_MEMORY_ERROR;
+        }
+
+        // Generate the amiibo data
+        const RfidxStatus status = amiibo_generate(uuid, *amiibo_data, *header);
+        if (status != RFIDX_OK) {
+            free(*amiibo_data);
+            free(*header);
+            return status;
+        }
+    }
+
+    // Derive the keys
+    DerivedKey tag_key = {0};
+    DerivedKey data_key = {0};
+
+    RfidxStatus status = amiibo_derive_key(&dumped_keys->tag, *amiibo_data, &tag_key);
+    if (status != RFIDX_OK) {
+        return status;
+    }
+
+    status = amiibo_derive_key(&dumped_keys->data, *amiibo_data, &data_key);
+    if (status != RFIDX_OK) {
+        return status;
+    }
+
+    switch (command) {
+        case TRANSFORM_GENERATE:
+            // Do nothing, the amiibo data is already generated
+            break;
+        case TRANSFORM_WIPE:
+            // Decrypt the Amiibo data
+            status = amiibo_cipher(&data_key, *amiibo_data);
+            if (status != RFIDX_OK) {
+                return status;
+            }
+
+            // Wipe the Amiibo data
+            status = amiibo_wipe(*amiibo_data, *header);
+            if (status != RFIDX_OK) {
+                return status;
+            }
+
+            break;
+        case TRANSFORM_RANDOMIZE_UID:
+            // Decrypt the Amiibo data
+            status = amiibo_cipher(&data_key, *amiibo_data);
+            if (status != RFIDX_OK) {
+                return status;
+            }
+
+            // Randomize the UID
+            status = ntag21x_randomize_uid(&(*amiibo_data)->ntag215.structure.manufacturer_data);
+            if (status != RFIDX_OK) {
+                return status;
+            }
+
+            break;
+    }
+
+    // Format the dump
+    status = amiibo_format_dump(*amiibo_data, *header);
+    if (status != RFIDX_OK) {
+        return status;
+    }
+
+    // Sign and encrypt the tag
+    status = amiibo_sign_payload(&tag_key, &data_key, *amiibo_data);
+    if (status != RFIDX_OK) {
+        return status;
+    }
+
+    status = amiibo_cipher(&tag_key, *amiibo_data);
+    if (status != RFIDX_OK) {
+        return status;
+    }
+
+    return RFIDX_OK;
 }
