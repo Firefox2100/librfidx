@@ -9,7 +9,7 @@
 
 #include "librfidx/mifare/mifare_classic.h"
 
-MfcAccessBits mfc_get_access_bits_for_block(const MfcSectorTrailer *trailer, uint8_t block) {
+MfcAccessBits mfc_get_access_bits_for_block(const MfcSectorTrailer *trailer, const uint8_t block) {
     MfcAccessBits ab = {0};
 
     if (block > 3) {
@@ -23,7 +23,7 @@ MfcAccessBits mfc_get_access_bits_for_block(const MfcSectorTrailer *trailer, uin
     return ab;
 }
 
-RfidxStatus mfc_set_access_bits_for_block(MfcSectorTrailer *trailer, uint8_t block, MfcAccessBits access_bits) {
+RfidxStatus mfc_set_access_bits_for_block(MfcSectorTrailer *trailer, const uint8_t block, const MfcAccessBits access_bits) {
     if (block > 3) return RFIDX_MFC_ACCESS_BITS_ERROR;
 
     trailer->access_bits[1] &= ~(1 << block);
@@ -51,10 +51,10 @@ RfidxStatus mfc_set_access_bits_for_block(MfcSectorTrailer *trailer, uint8_t blo
     return RFIDX_OK;
 }
 
-RfidxStatus mfc_validate_access_bits(const MfcAccessBits *ab) {
-    if (!ab) return RFIDX_MFC_ACCESS_BITS_ERROR;
+RfidxStatus mfc_validate_access_bits(const MfcAccessBits *access_bits) {
+    if (!access_bits) return RFIDX_MFC_ACCESS_BITS_ERROR;
 
-    if ((ab->c1 & ~0x01) || (ab->c2 & ~0x01) || (ab->c3 & ~0x01)) {
+    if ((access_bits->c1 & ~0x01) || (access_bits->c2 & ~0x01) || (access_bits->c3 & ~0x01)) {
         return RFIDX_MFC_ACCESS_BITS_ERROR;
     }
 

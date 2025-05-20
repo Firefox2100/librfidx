@@ -145,10 +145,7 @@ RfidxStatus amiibo_generate(
     AmiiboData *amiibo_data,
     Ntag21xMetadataHeader *header
 );
-RfidxStatus amiibo_wipe(
-    AmiiboData *amiibo_data,
-    Ntag21xMetadataHeader *header
-);
+RfidxStatus amiibo_wipe(AmiiboData *amiibo_data);
 RfidxStatus amiibo_transform_data(
     AmiiboData **amiibo_data,
     Ntag21xMetadataHeader **header,

@@ -29,8 +29,8 @@ static void derive_step(
         *used = true;
     }
 
-    buffer[0] = *iteration >> 8;
-    buffer[1] = *iteration >> 0;
+    buffer[0] = (uint8_t)(*iteration >> 8);
+    buffer[1] = (uint8_t)(*iteration >> 0);
     (*iteration)++;
 
     mbedtls_md_hmac_update(hmac_context, buffer, buffer_size);
@@ -140,7 +140,7 @@ RfidxStatus amiibo_generate_signature(
     uint8_t signing_buffer[480] = {0};
     memcpy(signing_buffer, amiibo_data->ntag215.bytes + 16, 36);
     memcpy(signing_buffer + 36, amiibo_data->amiibo.data.bytes, 360);
-    memcpy(signing_buffer + 428, amiibo_data->amiibo.manufacturer_data.uid0, 8);
+    memcpy(signing_buffer + 428, &amiibo_data->amiibo.manufacturer_data, 8);
     memcpy(signing_buffer + 436, amiibo_data->amiibo.model_info.bytes, 44);
 
     mbedtls_md_hmac(
@@ -282,8 +282,7 @@ RfidxStatus amiibo_generate(
 }
 
 RfidxStatus amiibo_wipe(
-    AmiiboData* amiibo_data,
-    Ntag21xMetadataHeader *header
+    AmiiboData* amiibo_data
 ) {
     // Clear application data
     memset(&amiibo_data->amiibo.data, 0, sizeof(AmiiboApplicationData));
@@ -351,7 +350,7 @@ RfidxStatus amiibo_transform_data(
             }
 
             // Wipe the Amiibo data
-            status = amiibo_wipe(*amiibo_data, *header);
+            status = amiibo_wipe(*amiibo_data);
             if (status != RFIDX_OK) {
                 return status;
             }

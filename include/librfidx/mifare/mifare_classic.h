@@ -1,4 +1,3 @@
-
 /*
  * librfidx - Universal RFID Tag Format Parser and Converter
  *
@@ -47,11 +46,19 @@ typedef struct {
     uint8_t c3;
 } MfcAccessBits;
 
+#pragma pack(push, 1)
+typedef struct {
+    MfcDataBlock data_block[3];
+    MfcSectorTrailer sector_trailer;
+} Mfc4BlockSector;
+#pragma pack(pop)
+
 MfcAccessBits mfc_get_access_bits_for_block(const MfcSectorTrailer *trailer, uint8_t block);
 RfidxStatus mfc_set_access_bits_for_block(MfcSectorTrailer *trailer, uint8_t block, MfcAccessBits access_bits);
 RfidxStatus mfc_validate_access_bits(const MfcAccessBits *access_bits);
 
 _Static_assert(sizeof(MfcDataBlock) == MFC_BLOCK_SIZE, "Mifare Classic 1K block size mismatch");
 _Static_assert(sizeof(MfcSectorTrailer) == MFC_BLOCK_SIZE, "Mifare Classic 1K sector trailer size mismatch");
+_Static_assert(sizeof(Mfc4BlockSector) == (MFC_BLOCK_SIZE * 4), "Mifare Classic 1K sector size mismatch");
 
 #endif //LIBRFIDX_MIFARE_CLASSIC_H

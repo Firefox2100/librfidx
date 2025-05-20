@@ -150,7 +150,7 @@ RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag2
         return RFIDX_JSON_PARSE_ERROR;
     }
 
-    cJSON *card_data = cJSON_GetObjectItem(root, "Card");
+    const cJSON *card_data = cJSON_GetObjectItem(root, "Card");
     if (!card_data) {
         cJSON_Delete(root);
         return RFIDX_JSON_PARSE_ERROR;
@@ -161,7 +161,7 @@ RfidxStatus ntag215_parse_json(const char *json_str, Ntag215Data *ntag215, Ntag2
         return header_load_status;
     }
 
-    cJSON *blocks_data = cJSON_GetObjectItem(root, "blocks");
+    const cJSON *blocks_data = cJSON_GetObjectItem(root, "blocks");
     if (!blocks_data) {
         cJSON_Delete(root);
         return RFIDX_JSON_PARSE_ERROR;
@@ -327,7 +327,7 @@ RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21x
                     header->memory_max = (uint8_t) strtol(val, NULL, 10) - 1;
                 } else if (strncmp(key, "Page ", 5) == 0) {
                     char *endptr;
-                    uint32_t page = strtoul(key + 5, &endptr, 10);
+                    const uint32_t page = (uint32_t)strtoul(key + 5, &endptr, 10);
                     if (val == endptr) {
                         free(line);
                         return RFIDX_NFC_PARSE_ERROR;
@@ -352,7 +352,8 @@ RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21x
 }
 
 char *ntag215_serialize_nfc(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {
-    size_t cap = 1024, len = 0;
+    size_t cap = 1024;
+    size_t len = 0;
     char *buf = malloc(cap);
     if (!buf) return NULL;
     buf[0] = '\0';
@@ -418,7 +419,7 @@ RfidxStatus ntag215_generate(Ntag215Data* ntag215, Ntag21xMetadataHeader *header
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_wipe(Ntag215Data* ntag215, Ntag21xMetadataHeader *header) {
+RfidxStatus ntag215_wipe(Ntag215Data* ntag215) {
     // Reset all user memory pages
     for (int i = 0; i < NTAG215_NUM_USER_PAGES; i++) {
         memset(ntag215->structure.user_memory[i], 0, NTAG21X_PAGE_SIZE);
@@ -441,7 +442,7 @@ RfidxStatus ntag215_transform_data(
         case TRANSFORM_NONE:
             return RFIDX_OK;
         case TRANSFORM_WIPE:
-            return ntag215_wipe(*ntag215, *header);
+            return ntag215_wipe(*ntag215);
         case TRANSFORM_GENERATE:
             *ntag215 = malloc(sizeof(Ntag215Data));
             if (!*ntag215) return RFIDX_MEMORY_ERROR;

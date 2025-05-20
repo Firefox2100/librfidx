@@ -1,4 +1,3 @@
-
 /*
  * librfidx - Universal RFID Tag Format Parser and Converter
  *
@@ -11,26 +10,10 @@
 #ifndef LIBRFIDX_MIFARE_CLASSIC_1K_H
 #define LIBRFIDX_MIFARE_CLASSIC_1K_H
 
-#include <stdint.h>
-#include "librfidx/common.h"
+#include "librfidx/mifare/mifare_classic_1k_core.h"
 
-#define MFC_1K_BLOCK_SIZE 16
-#define MFC_1K_NUM_BLOCK_PER_SECTOR 4
-#define MFC_1K_NUM_SECTOR 16
-#define MFC_1K_TOTAL_BYTES (MFC_1K_BLOCK_SIZE * MFC_1K_NUM_BLOCK_PER_SECTOR * MFC_1K_NUM_SECTOR)
+#ifndef LIBRFIDX_NO_PLATFORM
 
-typedef uint8_t Mfc1kRaw[MFC_1K_NUM_SECTOR][MFC_1K_NUM_BLOCK_PER_SECTOR][MFC_1K_BLOCK_SIZE];
-
-#pragma pack(push, 1)
-typedef union {
-    Mfc1kRaw blocks;
-    uint8_t bytes[MFC_1K_TOTAL_BYTES];
-    struct {
-
-    } structure;
-} Mfc1kData;
-#pragma pack(pop)
-
-_Static_assert(sizeof(Mfc1kData) == MFC_1K_TOTAL_BYTES, "Mifare Classic 1K data size mismatch");
+#endif
 
 #endif //LIBRFIDX_MIFARE_CLASSIC_1K_H

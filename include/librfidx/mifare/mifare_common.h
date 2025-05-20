@@ -1,4 +1,3 @@
-
 /*
  * librfidx - Universal RFID Tag Format Parser and Converter
  *

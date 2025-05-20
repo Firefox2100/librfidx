@@ -141,10 +141,7 @@ RfidxStatus ntag215_generate(
     Ntag21xMetadataHeader *header
 );
 
-RfidxStatus ntag215_wipe(
-    Ntag215Data* ntag215,
-    Ntag21xMetadataHeader *header
-);
+RfidxStatus ntag215_wipe(Ntag215Data* ntag215);
 
 RfidxStatus ntag215_transform_data(
     Ntag215Data **ntag215,

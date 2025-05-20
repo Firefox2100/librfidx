@@ -89,9 +89,9 @@ RfidxStatus transform_tag(
             return ntag215_transform_data((Ntag215Data**)data, (Ntag21xMetadataHeader**)header, command);
         case AMIIBO:
             // Convert the uuid to uint8_t array
-            uint8_t uuid_bytes[16] = {0};
+            uint8_t uuid_bytes[8] = {0};
             if (uuid) {
-                if (hex_to_bytes(uuid, uuid_bytes, 16) != RFIDX_OK) {
+                if (hex_to_bytes(uuid, uuid_bytes, 8) != RFIDX_OK) {
                     fprintf(stderr, "Failed to convert UUID to bytes.\n");
                     return RFIDX_NUMERICAL_OPERATION_FAILED;
                 }
@@ -146,6 +146,7 @@ TransformCommand string_to_transform_command(const char *str) {
     if (!str) return TRANSFORM_NONE;
     if (strcmp(str, "generate") == 0) return TRANSFORM_GENERATE;
     if (strcmp(str, "randomize-uid") == 0) return TRANSFORM_RANDOMIZE_UID;
+    if (strcmp(str, "wipe") == 0) return TRANSFORM_WIPE;
     return TRANSFORM_NONE;
 }
 
