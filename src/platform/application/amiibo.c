@@ -8,8 +8,6 @@
  */
 
 #include <stdio.h>
-#include <string.h>
-#include "mbedtls/aes.h"
 #include "librfidx/application/amiibo.h"
 
 RfidxStatus amiibo_load_dumped_keys(const char* filename, DumpedKeys *dumped_keys) {

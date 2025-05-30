@@ -28,6 +28,14 @@
 #define RFIDX_DRNG_ERROR -10
 #define RFIDX_UNKNOWN_ENUM_ERROR -11
 
+#ifdef _WIN32
+    #define RFIDX_EXPORT __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+    #define RFIDX_EXPORT __attribute__((visibility("default")))
+#else
+    #define RFIDX_EXPORT
+#endif
+
 typedef uint32_t RfidxStatus;
 
 typedef enum {
@@ -63,18 +71,18 @@ typedef enum {
     TRANSFORM_WIPE,
 } TransformCommand;
 
-extern mbedtls_ctr_drbg_context rfidx_ctr_drbg;
-extern mbedtls_entropy_context rfidx_entropy;
-extern bool rfidx_rng_initialized;
+RFIDX_EXPORT extern mbedtls_ctr_drbg_context rfidx_ctr_drbg;
+RFIDX_EXPORT extern mbedtls_entropy_context rfidx_entropy;
+RFIDX_EXPORT extern bool rfidx_rng_initialized;
 
-RfidxStatus hex_to_bytes(const char *hex, uint8_t *out, size_t len);
+RFIDX_EXPORT RfidxStatus hex_to_bytes(const char *hex, uint8_t *out, size_t len);
 RfidxStatus bytes_to_hex(const uint8_t *bytes, size_t len, char *out);
 char* remove_whitespace(const char *str);
-TagType string_to_tag_type(const char *str);
-FileFormat string_to_file_format(const char *str);
+RFIDX_EXPORT TagType string_to_tag_type(const char *str);
+RFIDX_EXPORT FileFormat string_to_file_format(const char *str);
 void uint_to_str(unsigned int val, char *out, size_t out_size);
 int appendf(char **buf, size_t *len, size_t *cap, const char *fmt, ...);
-int rfidx_init_rng(
+RFIDX_EXPORT int rfidx_init_rng(
     mbedtls_entropy_f_source_ptr custom_entropy_func,
     void *custom_entropy_param
 );

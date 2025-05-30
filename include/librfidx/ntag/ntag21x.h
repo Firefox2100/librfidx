@@ -70,8 +70,25 @@ typedef struct {
 } Ntag21xMetadataHeader;
 #pragma pack(pop)
 
-RfidxStatus ntag21x_validate_manufacturer_data(const Ntag21xManufacturerData *manufacturer_data);
-RfidxStatus ntag21x_randomize_uid(Ntag21xManufacturerData *manufacturer_data);
+/**
+ * @brief Validate the manufacturer data of an NTAG21x tag
+ *
+ * All NTAG21x tags share the same data structure for manufacturer data.
+ * This function checks the UID, BCC, and internal configuration byte for validity.
+ * @param manufacturer_data Pointer to the NTAG21xManufacturerData structure to validate.
+ * @return RfidxStatus indicating success or failure of the validation.
+ */
+RFIDX_EXPORT RfidxStatus ntag21x_validate_manufacturer_data(const Ntag21xManufacturerData *manufacturer_data);
+
+/**
+ * @brief Randomize the UID of an NTAG21x tag
+ *
+ * NTAG21x tags have a fixed structure for UID and the BCC bytes. This function follows that
+ * convention and randomizes the UID while ensuring that the BCC bytes are correctly calculated.
+ * @param manufacturer_data Pointer to the NTAG21xManufacturerData structure to randomize.
+ * @return RfidxStatus indicating success or failure of the randomization.
+ */
+RFIDX_EXPORT RfidxStatus ntag21x_randomize_uid(Ntag21xManufacturerData *manufacturer_data);
 
 _Static_assert(sizeof(Ntag21xManufacturerData) == NTAG21X_PAGE_SIZE * 3, "NTAG21x manufacturer data size mismatch");
 _Static_assert(sizeof(Ntag21xConfiguration) == NTAG21X_PAGE_SIZE * 4, "NTAG21x configuration size mismatch");

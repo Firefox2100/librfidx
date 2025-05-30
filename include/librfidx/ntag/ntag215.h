@@ -23,10 +23,10 @@
  * can't be opened, or the size is wrong.
  * @param filename Path to the binary file.
  * @param ntag215 Pointer to the NTAG215Data buffer to load the data into.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to load Proxmark 3 metadata into.
+ * @param header: Pointer to the Ntag21xMetadataHeader buffer to load tag metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_load_from_binary(
+RFIDX_EXPORT RfidxStatus ntag215_load_from_binary(
     const char *filename,
     Ntag215Data *ntag215,
     Ntag21xMetadataHeader *header
@@ -41,10 +41,10 @@ RfidxStatus ntag215_load_from_binary(
  * writing fails.
  * @param filename Path to the binary file.
  * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @param header: Pointer to the Ntag21xMetadataHeader buffer to save tag metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_save_to_binary(
+RFIDX_EXPORT RfidxStatus ntag215_save_to_binary(
     const char *filename,
     const Ntag215Data *ntag215,
     const Ntag21xMetadataHeader *header
@@ -70,10 +70,10 @@ RfidxStatus ntag215_save_to_eml(
  * can't be opened, or the size is wrong.
  * @param filename Path to the JSON file.
  * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @param header: Pointer to the Ntag21xMetadataHeader buffer to save tag metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_load_from_json(
+RFIDX_EXPORT RfidxStatus ntag215_load_from_json(
     const char *filename,
     Ntag215Data *ntag215,
     Ntag21xMetadataHeader *header
@@ -88,10 +88,10 @@ RfidxStatus ntag215_load_from_json(
  * writing fails.
  * @param filename Path to the JSON file.
  * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @param header: Pointer to the Ntag21xMetadataHeader buffer to save tag metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_save_to_json(
+RFIDX_EXPORT RfidxStatus ntag215_save_to_json(
     const char *filename,
     const Ntag215Data *ntag215,
     const Ntag21xMetadataHeader *header
@@ -106,10 +106,10 @@ RfidxStatus ntag215_save_to_json(
  * can't be opened, or the size is wrong.
  * @param filename Path to the NFC file.
  * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @param header: Pointer to the Ntag21xMetadataHeader buffer to save tag metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_load_from_nfc(
+RFIDX_EXPORT RfidxStatus ntag215_load_from_nfc(
     const char *filename,
     Ntag215Data *ntag215,
     Ntag21xMetadataHeader *header
@@ -124,10 +124,10 @@ RfidxStatus ntag215_load_from_nfc(
  * writing fails.
  * @param filename Path to the NFC file.
  * @param ntag215 Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @param header: Pointer to the Ntag21xMetadataHeader buffer to save tag metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_save_to_nfc(
+RFIDX_EXPORT RfidxStatus ntag215_save_to_nfc(
     const char *filename,
     const Ntag215Data *ntag215,
     const Ntag21xMetadataHeader *header
@@ -140,12 +140,12 @@ RfidxStatus ntag215_save_to_nfc(
  * processes the data and header into a different format. The output format
  * can be specified as an enum value.
  * @param data Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @param header: Pointer to the Ntag21xMetadataHeader buffer to save tag metadata into.
  * @param output_format The output format to transform to.
  * @param filename Path to the output file.
  * @return Transformed data
  */
-char *ntag215_transform_format(
+RFIDX_EXPORT char *ntag215_transform_format(
     const Ntag215Data *data,
     const Ntag21xMetadataHeader *header,
     FileFormat output_format,
@@ -161,10 +161,10 @@ char *ntag215_transform_format(
  * can't be opened, or the size is wrong.
  * @param filename Path to the file.
  * @param data Pointer to the NTAG215Data data.
- * @param header: Pointer to the Ntag21xProxmarkHeader buffer to save Proxmark 3 metadata into.
+ * @param header: Pointer to the Ntag21xMetadataHeader buffer to save tag metadata into.
  * @return Status code
  */
-RfidxStatus ntag215_read_from_file(
+RFIDX_EXPORT RfidxStatus ntag215_read_from_file(
     const char *filename,
     Ntag215Data **data,
     Ntag21xMetadataHeader **header
