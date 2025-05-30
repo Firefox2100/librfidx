@@ -7,12 +7,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <check.h>
+#include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
+#include <setjmp.h>
+#include <cmocka.h>
 #include "librfidx/rfidx.h"
 
-START_TEST (test_randomize_uid_ntag215)
+static void test_rfidx_randomize_uid_ntag215(void **state)
 {
     char *argv[] = {
         "rfidx",
@@ -33,25 +35,18 @@ START_TEST (test_randomize_uid_ntag215)
 
     fclose(out_stream);
     fclose(err_stream);
-    ck_assert_msg(status == RFIDX_OK, "rfidx_main failed with status: %d: %s", status, err_buf);
-    ck_assert_msg(err_buf[0] == '\0', "Error stream should be empty, but got: %s", err_buf);
+    
+    assert_int_equal(status, RFIDX_OK);
+    assert_string_equal(err_buf, "");
 
-    ck_assert_msg(
-        strncmp(out_buf, "Tag data: \n", 11) == 0,
-        "Output does not start with 'Tag data: ': got: %.20s",
-        out_buf
-    );
-    ck_assert_msg(
-        strncmp(out_buf + 123, "0448B87C262879BF", 16) != 0,
-        "UID should be randomized"
-    );
+    assert_true(strncmp(out_buf, "Tag data: \n", 11) == 0);
+    assert_true(strncmp(out_buf + 123, "0448B87C262879BF", 16) != 0);
 
     free(out_buf);
     free(err_buf);
 }
-END_TEST
 
-START_TEST (test_randomize_uid_amiibo)
+static void test_rfidx_randomize_uid_amiibo(void **state)
 {
     char *argv[] = {
         "rfidx",
@@ -73,36 +68,23 @@ START_TEST (test_randomize_uid_amiibo)
 
     fclose(out_stream);
     fclose(err_stream);
-    ck_assert_msg(status == RFIDX_OK, "rfidx_main failed with status: %d: %s", status, err_buf);
-    ck_assert_msg(err_buf[0] == '\0', "Error stream should be empty, but got: %s", err_buf);
+    
+    assert_int_equal(status, RFIDX_OK);
+    assert_string_equal(err_buf, "");
 
-    ck_assert_msg(
-        strncmp(out_buf, "Tag data: \n", 11) == 0,
-        "Output does not start with 'Tag data: ': got: %.20s",
-        out_buf
-    );
-    ck_assert_msg(
-        strncmp(out_buf + 123, "0448B87C262879BF", 16) != 0,
-        "UID should be randomized"
-    );
+    assert_true(strncmp(out_buf, "Tag data: \n", 11) == 0);
+    assert_true(strncmp(out_buf + 123, "0448B87C262879BF", 16) != 0);
 
     free(out_buf);
     free(err_buf);
 }
-END_TEST
 
-TCase *rfidx_randomize_uid_case(void) {
-    TCase *tc = tcase_create("rfidx randomize UID");
-    tcase_add_test(tc, test_randomize_uid_ntag215);
-    tcase_add_test(tc, test_randomize_uid_amiibo);
+static const struct CMUnitTest rfidx_tests[] = {
+    cmocka_unit_test(test_rfidx_randomize_uid_ntag215),
+    cmocka_unit_test(test_rfidx_randomize_uid_amiibo)
+};
 
-    return tc;
-}
-
-Suite *rfidx_suite(void) {
-    Suite *s = suite_create("rfidx CLI functions");
-
-    suite_add_tcase(s, rfidx_randomize_uid_case());
-
-    return s;
+const struct CMUnitTest* get_rfidx_tests(size_t *count) {
+    if (count) *count = sizeof(rfidx_tests) / sizeof(rfidx_tests[0]);
+    return rfidx_tests;
 }

@@ -54,3 +54,4 @@ dkms.conf
 # Build and debug
 /cmake-build-*/
 /build/
+/.cache/

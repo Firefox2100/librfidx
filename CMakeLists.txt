@@ -3,6 +3,8 @@ project(librfidx C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
 
 set(ENABLE_CJSON_TEST OFF CACHE BOOL "" FORCE)
@@ -66,54 +68,52 @@ option(BUILD_TESTS "Build unit tests" ON)
 option(ENABLE_SANITIZERS "Enable sanitizers if available (disabled in Release mode)" OFF)
 
 if(BUILD_TESTS)
-        find_package(PkgConfig QUIET)
-        if(PkgConfig_FOUND)
-                message(STATUS "PkgConfig found: ${PkgConfig_FOUND}")
-                pkg_check_modules(Check QUIET check)
-        endif()
+    find_package(cmocka QUIET)
 
-        if(PkgConfig_FOUND AND Check_FOUND)
-                message(STATUS "Check found: ${Check_FOUND}")
-                enable_testing()
+    if(cmocka_FOUND)
+        message(STATUS "cmocka found.")
+        enable_testing()
 
-                file(GLOB_RECURSE TEST_SOURCE tests/*.c)
-                add_executable(unit_test ${TEST_SOURCE})
+        file(GLOB_RECURSE TEST_SOURCE tests/*.c)
 
-                # Only use sanitizers if enabled and not in Release mode
-                if(ENABLE_SANITIZERS AND NOT CMAKE_BUILD_TYPE STREQUAL "Release")
-                        message(STATUS "Sanitizers are enabled. Do not run with Valgrind!")
-                        find_package(Sanitizers QUIET)
-                        if(Sanitizers_FOUND)
-                                message(STATUS "Sanitizers enabled and found: ${Sanitizers_FOUND}")
-                                add_sanitizers(unit_test)
-                                add_sanitizers(librfidx_shared)
-                        endif()
-                else()
-                        if(ENABLE_SANITIZERS)
-                                message(STATUS "Sanitizers are enabled but skipped due to Release build.")
-                        endif()
-                endif()
+        add_executable(unit_test 
+                ${TEST_SOURCE}
+        )
 
-                target_include_directories(unit_test PRIVATE
-                        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                        $<INSTALL_INTERFACE:include>
-                        ${Check_INCLUDE_DIRS}
-                )
-                target_link_libraries(unit_test
-                        librfidx_shared
-                        ${Check_LIBRARIES}
-                )
-                target_compile_definitions(unit_test PRIVATE UNIT_TESTING)
-                target_compile_options(unit_test PRIVATE -g -O0)
-
-                file(COPY ${CMAKE_SOURCE_DIR}/tests/assets
-                        DESTINATION ${CMAKE_BINARY_DIR}/tests
-                )
-
-                add_test(NAME unit_test
-                        COMMAND unit_test
-                )
+        if(ENABLE_SANITIZERS AND NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+            message(STATUS "Sanitizers are enabled. Do not run with Valgrind!")
+            find_package(Sanitizers QUIET)
+            if(Sanitizers_FOUND)
+                message(STATUS "Sanitizers enabled and found.")
+                add_sanitizers(unit_test)
+                add_sanitizers(librfidx_shared)
+            endif()
         else()
-                message(WARNING "Unit tests will not be built: 'check' or 'pkg-config' not found.")
+            if(ENABLE_SANITIZERS)
+                message(STATUS "Sanitizers are enabled but skipped due to Release build.")
+            endif()
         endif()
+
+        target_include_directories(unit_test PRIVATE
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include>
+            ${cmocka_INCLUDE_DIRS}
+        )
+
+        target_link_libraries(unit_test
+            librfidx_shared
+            cmocka
+        )
+
+        target_compile_definitions(unit_test PRIVATE UNIT_TESTING)
+        target_compile_options(unit_test PRIVATE -g -O0)
+
+        file(COPY ${CMAKE_SOURCE_DIR}/tests/assets
+            DESTINATION ${CMAKE_BINARY_DIR}/tests
+        )
+
+        include(CTestRegistration.cmake)
+    else()
+        message(WARNING "cmocka not found, unit tests will not be built.")
+    endif()
 endif()
