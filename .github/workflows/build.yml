@@ -34,6 +34,7 @@ jobs:
           cmake -S . -B build -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_C_FLAGS="--coverage -fprofile-abs-path" \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
             -DCMAKE_EXE_LINKER_FLAGS="--coverage -fprofile-abs-path"
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build
 
@@ -46,7 +47,7 @@ jobs:
       - name: Run Tests
         run: |
           cd build
-          ./unit_test
+          ctest --output-on-failure
           mkdir coverage
           cd coverage
           find .. -name "*.o" | xargs gcov --preserve-paths
