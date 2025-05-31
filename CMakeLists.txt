@@ -113,6 +113,24 @@ if(BUILD_TESTS)
         )
 
         include(CTestRegistration.cmake)
+
+        find_program(GCOVR_EXECUTABLE gcovr)
+
+        if (GCOVR_EXECUTABLE)
+            message(STATUS "gcovr found, registering coverage target.")
+            add_custom_target(coverage-html
+                COMMAND gcovr -r ${CMAKE_SOURCE_DIR} --object-directory ${CMAKE_BINARY_DIR} -f "${CMAKE_SOURCE_DIR}/src" --html --html-details -o coverage.html
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "Generating code coverage report"
+            )
+            add_custom_target(coverage-lcov
+                COMMAND gcovr -r ${CMAKE_SOURCE_DIR} --object-directory ${CMAKE_BINARY_DIR} -f "${CMAKE_SOURCE_DIR}/src" --lcov -o coverage.info
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                COMMENT "Generating LCOV coverage report"
+            )
+        else()
+            message(WARNING "gcovr not found, coverage targets will not be available.")
+        endif()
     else()
         message(WARNING "cmocka not found, unit tests will not be built.")
     endif()

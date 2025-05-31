@@ -1,9 +1,25 @@
 {
     "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json",
     "cmake.configureArgs": [
-        "-DCMAKE_EXPORT_COMPILE_COMMANDS=1"
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
+        "-DCMAKE_C_FLAGS='--coverage -fprofile-abs-path'",
+        "-DCMAKE_EXE_LINKER_FLAGS='--coverage -fprofile-abs-path'",
     ],
     "cmake.configureSettings": {
-        
-    }
+
+    },
+    "coverage-gutters.coverageFileNames": [
+        "coverage.info",
+        "cov.xml",
+        "coverage.xml",
+        "cobertura.xml",
+        "jacoco.xml",
+        "coverage.cobertura.xml"
+    ],
+    "coverage-gutters.coverageBaseDir": "build",
+    "coverage-gutters.coverageReportFileName": "build/coverage.html",
+    "cmake.postRunCoverageTarget": "coverage-lcov",
+    "cmake.coverageInfoFiles": [
+        "${workspaceFolder}/build/coverage.info"
+    ]
 }
