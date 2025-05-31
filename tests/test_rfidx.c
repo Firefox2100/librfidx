@@ -8,14 +8,12 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
 #include <cmocka.h>
 #include "librfidx/rfidx.h"
 
-static void test_rfidx_randomize_uid_ntag215(void **state)
-{
+static void test_rfidx_randomize_uid_ntag215(void **state) {
     char *argv[] = {
         "rfidx",
         "--input", "./tests/assets/ntag215.bin",
@@ -35,19 +33,15 @@ static void test_rfidx_randomize_uid_ntag215(void **state)
 
     fclose(out_stream);
     fclose(err_stream);
-    
+
     assert_int_equal(status, RFIDX_OK);
     assert_string_equal(err_buf, "");
 
     assert_true(strncmp(out_buf, "Tag data: \n", 11) == 0);
     assert_true(strncmp(out_buf + 123, "0448B87C262879BF", 16) != 0);
-
-    free(out_buf);
-    free(err_buf);
 }
 
-static void test_rfidx_randomize_uid_amiibo(void **state)
-{
+static void test_rfidx_randomize_uid_amiibo(void **state) {
     char *argv[] = {
         "rfidx",
         "--input", "./tests/assets/ntag215.bin",
@@ -68,15 +62,12 @@ static void test_rfidx_randomize_uid_amiibo(void **state)
 
     fclose(out_stream);
     fclose(err_stream);
-    
+
     assert_int_equal(status, RFIDX_OK);
     assert_string_equal(err_buf, "");
 
     assert_true(strncmp(out_buf, "Tag data: \n", 11) == 0);
     assert_true(strncmp(out_buf + 123, "0448B87C262879BF", 16) != 0);
-
-    free(out_buf);
-    free(err_buf);
 }
 
 static const struct CMUnitTest rfidx_tests[] = {
@@ -84,7 +75,7 @@ static const struct CMUnitTest rfidx_tests[] = {
     cmocka_unit_test(test_rfidx_randomize_uid_amiibo)
 };
 
-const struct CMUnitTest* get_rfidx_tests(size_t *count) {
+const struct CMUnitTest *get_rfidx_tests(size_t *count) {
     if (count) *count = sizeof(rfidx_tests) / sizeof(rfidx_tests[0]);
     return rfidx_tests;
 }

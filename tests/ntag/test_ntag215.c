@@ -9,12 +9,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <stddef.h>
 #include <setjmp.h>
 #include <string.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <cmocka.h>
 #include "librfidx/ntag/ntag215.h"
 

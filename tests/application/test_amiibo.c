@@ -13,8 +13,7 @@
 #include "librfidx/ntag/ntag215.h"
 #include "librfidx/application/amiibo.h"
 
-static void test_amiibo_load_dumped_keys(void **state)
-{
+static void test_amiibo_load_dumped_keys(void **state) {
     const char *filename = "tests/assets/key_retail.bin";
     DumpedKeys keys = {0};
     const RfidxStatus load_status = amiibo_load_dumped_keys(filename, &keys);
@@ -41,8 +40,7 @@ static void test_amiibo_load_dumped_keys(void **state)
     assert_memory_equal(keys.tag.hmacKey, expected_tag_hmac, 16);
 }
 
-static void test_amiibo_derive_keys(void **state)
-{
+static void test_amiibo_derive_keys(void **state) {
     const char *key_name = "tests/assets/key_retail.bin";
     const char *amiibo_name = "tests/assets/ntag215.bin";
 
@@ -65,8 +63,7 @@ static void test_amiibo_derive_keys(void **state)
     assert_int_equal(status, RFIDX_OK);
 }
 
-static void test_amiibo_validate_signature(void **state)
-{
+static void test_amiibo_validate_signature(void **state) {
     const char *key_name = "tests/assets/key_retail.bin";
     const char *amiibo_name = "tests/assets/ntag215.bin";
 
@@ -101,7 +98,7 @@ static const struct CMUnitTest amiibo_tests[] = {
     cmocka_unit_test(test_amiibo_validate_signature),
 };
 
-const struct CMUnitTest* get_amiibo_tests(size_t *count) {
+const struct CMUnitTest *get_amiibo_tests(size_t *count) {
     if (count) *count = sizeof(amiibo_tests) / sizeof(amiibo_tests[0]);
     return amiibo_tests;
 }

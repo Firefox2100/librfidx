@@ -9,23 +9,26 @@
 
 #include <stddef.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <setjmp.h>
 #include <cmocka.h>
 
-extern const struct CMUnitTest* get_ntag21x_tests(size_t *count);
-extern const struct CMUnitTest* get_ntag215_tests(size_t *count);
+extern const struct CMUnitTest *get_ntag21x_tests(size_t *count);
+extern const struct CMUnitTest *get_ntag215_tests(size_t *count);
 
-extern const struct CMUnitTest* get_amiibo_tests(size_t *count);
-extern const struct CMUnitTest* get_rfidx_tests(size_t *count);
+extern const struct CMUnitTest *get_amiibo_tests(size_t *count);
+extern const struct CMUnitTest *get_rfidx_tests(size_t *count);
 
 struct CombinedTests {
     struct CMUnitTest *tests;
     size_t count;
 };
 
-struct CombinedTests combine_test_arrays(const struct CMUnitTest **arrays, const size_t *counts, size_t num_arrays) {
+struct CombinedTests combine_test_arrays(
+    const struct CMUnitTest **arrays,
+    const size_t *counts,
+    const size_t num_arrays
+) {
     size_t total = 0;
     for (size_t i = 0; i < num_arrays; ++i) {
         total += counts[i];
@@ -38,10 +41,10 @@ struct CombinedTests combine_test_arrays(const struct CMUnitTest **arrays, const
         offset += counts[i];
     }
 
-    return (struct CombinedTests){ .tests = combined, .count = total };
+    return (struct CombinedTests){.tests = combined, .count = total};
 }
 
-int main(void) {
+int main(const int argc, char **argv) {
     size_t ntag21x_count;
     size_t ntag215_count;
     size_t amiibo_count;
@@ -65,13 +68,33 @@ int main(void) {
         rfidx_count
     };
 
-    struct CombinedTests combined_tests = combine_test_arrays(
+    const struct CombinedTests combined_tests = combine_test_arrays(
         test_arrays,
-        test_counts, 
+        test_counts,
         sizeof(test_arrays) / sizeof(test_arrays[0])
     );
 
-    int result = cmocka_run_group_tests(combined_tests.tests, NULL, NULL);
+    const char *filter = NULL;
+    if (argc > 1) {
+        filter = argv[1];
+    }
+
+    struct CMUnitTest *filtered_tests = malloc(sizeof(struct CMUnitTest) * combined_tests.count);
+    size_t filtered_count = 0;
+
+    for (size_t i = 0; i < combined_tests.count; ++i) {
+        if (!filter || strstr(combined_tests.tests[i].name, filter)) {
+            filtered_tests[filtered_count++] = combined_tests.tests[i];
+        }
+    }
+
+    const int result = _cmocka_run_group_tests(
+        "librfidx tests",
+        filtered_tests,
+        filtered_count,
+        NULL,
+        NULL
+    );
 
     free(combined_tests.tests);
 
