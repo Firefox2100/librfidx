@@ -135,3 +135,24 @@ if(BUILD_TESTS)
         message(WARNING "cmocka not found, unit tests will not be built.")
     endif()
 endif()
+
+option(BUILD_DOCS "Build documentation" OFF)
+
+if (BUILD_DOCS)
+    find_package(Doxygen QUIET)
+
+    if (DOXYGEN_FOUND)
+        message(STATUS "Doxygen found, building documentation.")
+        set(DOXYGEN_IN ${CMAKE_SOURCE_DIR}/docs/Doxyfile.in)
+        set(DOXYGEN_OUT ${CMAKE_BINARY_DIR}/Doxyfile.build)
+
+        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+        add_custom_target(doc
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "Generating documentation with Doxygen"
+        )
+        set_target_properties(doc PROPERTIES FOLDER "Documentation")
+    endif()
+endif()
