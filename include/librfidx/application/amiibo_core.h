@@ -12,8 +12,8 @@
 
 #include "librfidx/ntag/ntag215_core.h"
 
-#define RFIDX_AMIIBO_KEY_IO_ERROR -1024
-#define RFIDX_AMIIBO_HMAC_VALIDATION_ERROR -1025
+#define RFIDX_AMIIBO_KEY_IO_ERROR 0xFFFF0200U
+#define RFIDX_AMIIBO_HMAC_VALIDATION_ERROR 0xFFFF0201U
 
 #pragma pack(push, 1)
 /**
@@ -155,13 +155,47 @@ typedef union {
     AmiiboStructure amiibo;     /**< Memory by Amiibo structure */
 } AmiiboData;
 
+/**
+ * @brief Derive keys from dumped key and Amiibo data
+ *
+ * Amiibo keys are derived from the key generation salt and the keys extracted
+ * from the console. This function takes both input, and derive the key for use
+ * with this specific Amiibo.
+ * @param input_key The dumped key to derive from
+ * @param amiibo_data The Amiibo data to derive the key for
+ * @param derived_key The derived key to fill with the result
+ * @return RFIDX_OK on success, or an error code on failure
+ */
 RFIDX_EXPORT RfidxStatus amiibo_derive_key(
     const DumpedKeySingle *input_key,
     const AmiiboData *amiibo_data,
     DerivedKey *derived_key
 );
 
+/**
+ * @brief Run AES cipher on Amiibo data
+ *
+ * Amiibo data is encrypted using AES-128 in CTR mode. This function
+ * runs the cypher on the Amiibo data, handling both encryption and decryption.
+ * @param data_key The derived data key to use for encryption/decryption
+ * @param amiibo_data The Amiibo data to encrypt/decrypt
+ * @return RFIDX_OK on success, or an error code on failure
+ */
 RFIDX_EXPORT RfidxStatus amiibo_cipher(const DerivedKey *data_key, AmiiboData* amiibo_data);
+
+/**
+ * @brief Generate HMAC signature for Amiibo data
+ *
+ * Amiibo has 2 signature, generated from 2 different HMAC signing keys, and used to sign
+ * different data. This function generates the signatures for both tag and data, filling
+ * the provided buffers with the result. Can only be used on decrypted Amiibo data.
+ * @param tag_key The derived tag key to use for signing the tag data
+ * @param data_key The derived data key to use for signing the application data
+ * @param amiibo_data The Amiibo data to sign
+ * @param tag_hash The buffer to fill with the tag signature
+ * @param data_hash The buffer to fill with the data signature
+ * @return RFIDX_OK on success, or an error code on failure
+ */
 RfidxStatus amiibo_generate_signature(
     const DerivedKey *tag_key,
     const DerivedKey *data_key,
@@ -169,11 +203,33 @@ RfidxStatus amiibo_generate_signature(
     uint8_t *tag_hash,
     uint8_t *data_hash
 );
+
+/**
+ * @brief Validate the HMAC signature of Amiibo data
+ *
+ * Validate existing HMAC signatures of the Amiibo data, useful for checking
+ * if the dump is valid. Can only be used on decrypted Amiibo data.
+ * @param tag_key The derived tag key to use for validating the tag signature
+ * @param data_key The derived data key to use for validating the application data signature
+ * @param amiibo_data The Amiibo data to validate
+ * @return RFIDX_OK on success, or an error code on failure
+ */
 RFIDX_EXPORT RfidxStatus amiibo_validate_signature(
     const DerivedKey *tag_key,
     const DerivedKey *data_key,
     const AmiiboData* amiibo_data
 );
+
+/**
+ * @brief Sign the payload of Amiibo data
+ *
+ * Utility function to generate signature and add to Amiibo buffer in-place.
+ * Can only be used on decrypted Amiibo data.
+ * @param tag_key The derived tag key to use for signing the tag data
+ * @param data_key The derived data key to use for signing the application data
+ * @param amiibo_data The Amiibo data to sign
+ * @return RFIDX_OK on success, or an error code on failure
+ */
 RfidxStatus amiibo_sign_payload(
     const DerivedKey *tag_key,
     const DerivedKey *data_key,

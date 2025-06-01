@@ -21,5 +21,6 @@
     "cmake.postRunCoverageTarget": "coverage-lcov",
     "cmake.coverageInfoFiles": [
         "${workspaceFolder}/build/coverage.info"
-    ]
+    ],
+    "cmake.ctest.testSuiteDelimiter": "::"
 }

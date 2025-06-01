@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <getopt.h>
+#include "librfidx/ntag/ntag215.h"
+#include "librfidx/application/amiibo.h"
 #include "librfidx/rfidx.h"
 
 TagType read_tag_from_file(const char *filename, const TagType input_type, void **data, void **header) {

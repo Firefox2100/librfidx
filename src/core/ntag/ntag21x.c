@@ -7,7 +7,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <stdlib.h>
 #include "librfidx/ntag/ntag21x.h"
 
 RfidxStatus ntag21x_validate_manufacturer_data(const Ntag21xManufacturerData *manufacturer_data) {

@@ -20,7 +20,7 @@ static void test_ntag21x_validate_manufacturer_data(void **state) {
     Ntag21xManufacturerData manufacturer_data = {0};
 
     FILE *file = fopen(filename, "rb");
-    assert_non_null(file); // Ensure the file was opened successfully
+    assert_non_null(file);
 
     assert_int_equal(fseek(file, sizeof(Ntag21xMetadataHeader), SEEK_SET), 0);
     assert_int_equal(fread(&manufacturer_data, 1, sizeof(Ntag21xManufacturerData), file),
@@ -30,7 +30,43 @@ static void test_ntag21x_validate_manufacturer_data(void **state) {
 
     assert_int_equal(status, RFIDX_OK);
 
-    fclose(file); // Ensure the file is closed
+    fclose(file);
+}
+
+static void test_ntag21x_validate_manufacturer_data_failed(void **state) {
+    Ntag21xManufacturerData correct_data = {
+        .uid0 = {0x04, 0x48, 0xB8},
+        .bcc0 = 0x7C,
+        .uid1 = {0x26, 0x28, 0x79, 0xBF},
+        .bcc1 = 0xC8,
+        .internal = 0x48,
+        .lock = {0x0F, 0xE0}
+    };
+
+    Ntag21xManufacturerData *invalid_data = malloc(sizeof(Ntag21xManufacturerData));
+    assert_non_null(invalid_data);
+
+    memcpy(invalid_data, &correct_data, sizeof(Ntag21xManufacturerData));
+    invalid_data->uid0[0] = 0x05; // Invalid UID first byte
+    RfidxStatus status = ntag21x_validate_manufacturer_data(invalid_data);
+    assert_int_equal(status, RFIDX_NTAG21X_UID_ERROR);
+
+    memcpy(invalid_data, &correct_data, sizeof(Ntag21xManufacturerData));
+    invalid_data->bcc0 = 0xFF; // Invalid BCC0
+    status = ntag21x_validate_manufacturer_data(invalid_data);
+    assert_int_equal(status, RFIDX_NTAG21X_UID_ERROR);
+
+    memcpy(invalid_data, &correct_data, sizeof(Ntag21xManufacturerData));
+    invalid_data->bcc1 = 0xFF; // Invalid BCC1
+    status = ntag21x_validate_manufacturer_data(invalid_data);
+    assert_int_equal(status, RFIDX_NTAG21X_UID_ERROR);
+
+    memcpy(invalid_data, &correct_data, sizeof(Ntag21xManufacturerData));
+    invalid_data->internal = 0x00; // Invalid internal byte
+    status = ntag21x_validate_manufacturer_data(invalid_data);
+    assert_int_equal(status, RFIDX_NTAG21X_FIXED_BYTES_ERROR);
+
+    free(invalid_data);
 }
 
 static void test_ntag21x_randomize_uid(void **state) {
@@ -38,14 +74,14 @@ static void test_ntag21x_randomize_uid(void **state) {
     Ntag21xManufacturerData manufacturer_data = {0};
 
     FILE *file = fopen(filename, "rb");
-    assert_non_null(file); // Ensure the file was opened successfully
+    assert_non_null(file);
 
     assert_int_equal(fseek(file, sizeof(Ntag21xMetadataHeader), SEEK_SET), 0);
     assert_int_equal(fread(&manufacturer_data, 1, sizeof(Ntag21xManufacturerData), file),
                      sizeof(Ntag21xManufacturerData));
 
     RfidxStatus status = rfidx_init_rng(NULL, NULL);
-    assert_true(rfidx_rng_initialized); // Check if RNG was initialized
+    assert_true(rfidx_rng_initialized);
     assert_int_equal(status, 0);
 
     status = ntag21x_randomize_uid(&manufacturer_data);
@@ -54,11 +90,12 @@ static void test_ntag21x_randomize_uid(void **state) {
     status = ntag21x_validate_manufacturer_data(&manufacturer_data);
     assert_int_equal(status, RFIDX_OK);
 
-    fclose(file); // Ensure the file is closed
+    fclose(file);
 }
 
 static const struct CMUnitTest ntag21x_tests[] = {
     cmocka_unit_test(test_ntag21x_validate_manufacturer_data),
+    cmocka_unit_test(test_ntag21x_validate_manufacturer_data_failed),
     cmocka_unit_test(test_ntag21x_randomize_uid),
 };
 
