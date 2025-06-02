@@ -16,7 +16,7 @@
 #ifndef LIBRFIDX_NO_PLATFORM
 
 RFIDX_EXPORT RfidxStatus amiibo_load_dumped_keys(const char* filename, DumpedKeys *dumped_keys);
-RfidxStatus amiibo_save_dumped_keys(const char* filename, const DumpedKeys* keys);
+RFIDX_EXPORT RfidxStatus amiibo_save_dumped_keys(const char* filename, const DumpedKeys* keys);
 
 #endif
 

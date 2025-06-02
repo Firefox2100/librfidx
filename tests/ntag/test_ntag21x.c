@@ -90,6 +90,27 @@ static void test_ntag21x_randomize_uid(void **state) {
     status = ntag21x_validate_manufacturer_data(&manufacturer_data);
     assert_int_equal(status, RFIDX_OK);
 
+    status = rfidx_free_rng();
+    assert_true(!rfidx_rng_initialized);
+    assert_int_equal(status, RFIDX_OK);
+
+    fclose(file);
+}
+
+static void test_ntag21x_randomize_uid_failed(void **state) {
+    const char filename[] = "tests/assets/ntag215.bin";
+    Ntag21xManufacturerData manufacturer_data = {0};
+
+    FILE *file = fopen(filename, "rb");
+    assert_non_null(file);
+
+    assert_int_equal(fseek(file, sizeof(Ntag21xMetadataHeader), SEEK_SET), 0);
+    assert_int_equal(fread(&manufacturer_data, 1, sizeof(Ntag21xManufacturerData), file),
+                     sizeof(Ntag21xManufacturerData));
+
+    RfidxStatus status = ntag21x_randomize_uid(&manufacturer_data);
+    assert_int_equal(status, RFIDX_DRNG_ERROR);
+
     fclose(file);
 }
 
@@ -97,6 +118,7 @@ static const struct CMUnitTest ntag21x_tests[] = {
     cmocka_unit_test(test_ntag21x_validate_manufacturer_data),
     cmocka_unit_test(test_ntag21x_validate_manufacturer_data_failed),
     cmocka_unit_test(test_ntag21x_randomize_uid),
+    cmocka_unit_test(test_ntag21x_randomize_uid_failed),
 };
 
 const struct CMUnitTest *get_ntag21x_tests(size_t *count) {

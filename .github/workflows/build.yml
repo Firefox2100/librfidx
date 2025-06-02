@@ -47,7 +47,7 @@ jobs:
       - name: Run Tests
         run: |
           cd build
-          ctest --output-on-failure
+          ctest --output-on-failure -R ^all$
           mkdir coverage
           cd coverage
           find .. -name "*.o" | xargs gcov --preserve-paths

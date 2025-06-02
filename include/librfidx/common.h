@@ -86,5 +86,6 @@ RFIDX_EXPORT int rfidx_init_rng(
     mbedtls_entropy_f_source_ptr custom_entropy_func,
     void *custom_entropy_param
 );
+RFIDX_EXPORT int rfidx_free_rng(void);
 
 #endif //LIBRFIDX_COMMON_H

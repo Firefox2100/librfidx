@@ -230,18 +230,51 @@ RFIDX_EXPORT RfidxStatus amiibo_validate_signature(
  * @param amiibo_data The Amiibo data to sign
  * @return RFIDX_OK on success, or an error code on failure
  */
-RfidxStatus amiibo_sign_payload(
+RFIDX_EXPORT RfidxStatus amiibo_sign_payload(
     const DerivedKey *tag_key,
     const DerivedKey *data_key,
     AmiiboData* amiibo_data
 );
+
+/**
+ * @brief Format the Amiibo data for output
+ *
+ * This function reformats the control values and password, etc. for an Amiibo dump.
+ * It's used to clean up the dump for simulation.
+ * @param amiibo_data The Amiibo data to format
+ * @param header The NTAG21x metadata header to fill with the formatted data
+ * @return RFIDX_OK on success, or an error code on failure
+ */
 RfidxStatus amiibo_format_dump(AmiiboData* amiibo_data, Ntag21xMetadataHeader *header);
-RfidxStatus amiibo_generate(
+
+/**
+ * @brief Generate a new Amiibo data structure
+ *
+ * This function generates a new Amiibo blank dump for a given UUID. The UUID is an 8
+ * byte value that represents a specific Amiibo. Such value can be found on online databases
+ * like AmiiboAPI. The result is a blank Amiibo for that character, with basic format control
+ * and can be used directly in emulation or writing.
+ * @param uuid The 8 byte UUID of the Amiibo to generate
+ * @param amiibo_data The Amiibo data to fill with the generated data
+ * @param header The NTAG21x metadata header to fill with the generated data
+ * @return RFIDX_OK on success, or an error code on failure
+ */
+RFIDX_EXPORT RfidxStatus amiibo_generate(
     const uint8_t *uuid,
     AmiiboData *amiibo_data,
     Ntag21xMetadataHeader *header
 );
-RfidxStatus amiibo_wipe(AmiiboData *amiibo_data);
+
+/**
+ * @brief Wipe the Amiibo data
+ *
+ * This function resets the Amiibo application data without altering the tag UID, Amiibo model
+ * information, or tag configuration. It's the same as resetting an Amiibo at the console, except more
+ * thorough.
+ * @param amiibo_data The Amiibo data to wipe
+ * @return RFIDX_OK on success, or an error code on failure
+ */
+RFIDX_EXPORT RfidxStatus amiibo_wipe(AmiiboData *amiibo_data);
 RFIDX_EXPORT RfidxStatus amiibo_transform_data(
     AmiiboData **amiibo_data,
     Ntag21xMetadataHeader **header,

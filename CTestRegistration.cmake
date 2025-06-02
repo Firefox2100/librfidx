@@ -2,6 +2,7 @@ set(TESTS
     test_ntag21x_validate_manufacturer_data
     test_ntag21x_validate_manufacturer_data_failed
     test_ntag21x_randomize_uid
+    test_ntag21x_randomize_uid_failed
     test_ntag215_load_binary_dump
     test_ntag215_load_binary_dump_with_header
     test_ntag215_save_binary_and_reload
@@ -11,8 +12,13 @@ set(TESTS
     test_ntag215_load_nfc_dump_real
     test_ntag215_save_nfc_dump_and_reload
     test_amiibo_load_dumped_keys
+    test_amiibo_save_dumped_keys_and_reload
     test_amiibo_derive_keys
+    test_amiibo_cipher
     test_amiibo_validate_signature
+    test_amiibo_generate
+    test_amiibo_sign_payload
+    test_amiibo_wipe
     test_rfidx_randomize_uid_ntag215
     test_rfidx_randomize_uid_amiibo
 )
@@ -34,3 +40,5 @@ foreach(TEST ${TESTS})
 
     add_test(NAME ${TEST_NAME} COMMAND unit_test ${TEST})
 endforeach()
+
+add_test(NAME all COMMAND unit_test)

@@ -95,8 +95,8 @@ static void test_ntag215_load_binary_dump_with_header(void **state) {
 static void test_ntag215_save_binary_and_reload(void **state) {
     char filename[] = "/tmp/ntagtestXXXXXX";
     const int fd = mkstemp(filename);
-    assert_true(fd != -1);  // Ensure the file descriptor is valid
-    close(fd);  // Save will fopen it again
+    assert_true(fd != -1);
+    close(fd);
 
     Ntag215Data data = {0};
     Ntag21xMetadataHeader header = {0};

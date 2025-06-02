@@ -168,3 +168,15 @@ int rfidx_init_rng(
 
     return ret;
 }
+
+int rfidx_free_rng(void) {
+    if (!rfidx_rng_initialized) {
+        return RFIDX_DRNG_ERROR;
+    }
+
+    mbedtls_entropy_free(&rfidx_entropy);
+    mbedtls_ctr_drbg_free(&rfidx_ctr_drbg);
+    rfidx_rng_initialized = false;
+
+    return RFIDX_OK;
+}

@@ -261,6 +261,10 @@ RfidxStatus amiibo_generate(
     memset(amiibo_data, 0, sizeof(AmiiboData));
     memset(header, 0, sizeof(Ntag21xMetadataHeader));
 
+    if (!rfidx_rng_initialized) {
+        return RFIDX_DRNG_ERROR;
+    }
+
     const int ret = mbedtls_ctr_drbg_random(
         &rfidx_ctr_drbg,
         amiibo_data->amiibo.keygen_salt,

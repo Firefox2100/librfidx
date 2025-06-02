@@ -136,6 +136,7 @@ if(BUILD_TESTS)
     endif()
 endif()
 
+# ------------- DOXYGEN SETUP -------------
 option(BUILD_DOCS "Build documentation" OFF)
 
 if (BUILD_DOCS)

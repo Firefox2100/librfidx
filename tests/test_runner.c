@@ -88,6 +88,13 @@ int main(const int argc, char **argv) {
         }
     }
 
+    if (filtered_count == 0) {
+        fprintf(stderr, "No tests matched the filter: %s\n", filter ? filter : "no filter");
+        free(filtered_tests);
+        free(combined_tests.tests);
+        return 1;
+    }
+
     const int result = _cmocka_run_group_tests(
         "librfidx tests",
         filtered_tests,
