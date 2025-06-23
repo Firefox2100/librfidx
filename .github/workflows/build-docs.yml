@@ -26,7 +26,7 @@ jobs:
           cmake -S . -B build -G "Unix Makefiles" \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_DOCS=ON
-          cmake --build build --target docs
+          cmake --build build --target doc
 
       - name: Add .nojekyll file
         run: touch docs/html/.nojekyll
