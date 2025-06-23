@@ -5,34 +5,49 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   build:
-    name: Build and deploy documentation
+    name: Build Doxygen Docs
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: recursive
 
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install doxygen graphviz -y
 
-      - name: Generate Doxygen documentation
+      - name: Configure and build
         run: |
-          cmake -S . -B build -G "Unix Makefiles" \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_DOCS=ON
+          cmake -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_DOCS=ON
           cmake --build build --target doc
 
-      - name: Add .nojekyll file
-        run: touch docs/html/.nojekyll
-
-      - name: Deploy documentation
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/html
+          path: build/docs/html
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
