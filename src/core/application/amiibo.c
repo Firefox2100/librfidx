@@ -141,7 +141,8 @@ RfidxStatus amiibo_generate_signature(
     memcpy(signing_buffer, amiibo_data->ntag215.bytes + 16, 36);
     memcpy(signing_buffer + 36, amiibo_data->amiibo.data.bytes, 360);
     memcpy(signing_buffer + 428, &amiibo_data->amiibo.manufacturer_data, 8);
-    memcpy(signing_buffer + 436, amiibo_data->amiibo.model_info.bytes, 44);
+    memcpy(signing_buffer + 436, amiibo_data->amiibo.model_info.bytes, 12);
+    memcpy(signing_buffer + 448, amiibo_data->amiibo.keygen_salt, 32);
 
     mbedtls_md_hmac(
         mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),
@@ -297,7 +298,7 @@ RfidxStatus amiibo_wipe(
 RfidxStatus amiibo_transform_data(
     AmiiboData **amiibo_data,
     Ntag21xMetadataHeader **header,
-    TransformCommand command,
+    const TransformCommand command,
     const uint8_t *uuid,
     const DumpedKeys *dumped_keys
 ) {

@@ -198,7 +198,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
                 break;
             case 'h':
                 usage(executable_name, output_stream);
-                return(EXIT_SUCCESS);
+                return EXIT_SUCCESS;
             case 1000:
                 uuid = optarg;
                 break;
@@ -207,7 +207,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
                 break;
             default:
                 usage(executable_name, error_stream);
-                return(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
     }
 
@@ -215,7 +215,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
     if (output_file != NULL && output_format == NULL) {
         fprintf(error_stream, "Output format must be specified with -o option.\n");
         usage(executable_name, error_stream);
-        return(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     TagType tag_type = TAG_UNSPECIFIED;
     if (input_type != NULL) {
@@ -223,7 +223,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
         if (tag_type == TAG_UNKNOWN) {
             fprintf(error_stream, "Unknown input type: %s\n", input_type);
             usage(executable_name, error_stream);
-            return(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
     if (input_file == NULL) {
@@ -234,7 +234,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
                 "Cannot proceed without knowing the tag type.\n"
             );
             usage(executable_name, error_stream);
-            return(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
         if (transform_command == NULL) {
             fprintf(
@@ -243,7 +243,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
                 "Does not know what to do.\n"
             );
             usage(executable_name, error_stream);
-            return(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
 
@@ -258,7 +258,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
 
             if (data) free(data);
             if (header) free(header);
-            return(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
         if (tag_type == TAG_ERROR) {
             fprintf(error_stream, "Failed to read tag data from file: %s\n", input_file);
@@ -266,7 +266,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
 
             if (data) free(data);
             if (header) free(header);
-            return(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
 
@@ -279,7 +279,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
             usage(executable_name, error_stream);
             if (data) free(data);
             if (header) free(header);
-            return(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
 
         if (transform_tag(tag_type, command, &data, &header, uuid, retail_key) != RFIDX_OK) {
@@ -288,7 +288,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
 
             if (data) free(data);
             if (header) free(header);
-            return(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
     }
 
@@ -300,7 +300,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
 
             if (data) free(data);
             if (header) free(header);
-            return(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
 
         return save_tag_to_file(data, header, tag_type, format, output_file, output_stream, error_stream);
