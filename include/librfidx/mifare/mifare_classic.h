@@ -17,29 +17,54 @@
 #define MFC_BLOCK_SIZE 16
 
 #pragma pack(push, 1)
+/**
+ * @brief Mifare Classic data block
+ *
+ * This data structure corresponds to 16 bytes block in Mifare Classic,
+ * that is not at the end of a sector (which is used to store keys). There
+ * are two ways of accessing a block: as a normal block (16 bytes of storage),
+ * or as a value block with stronger validation, parity and has additional
+ * commands like value increment and decrement.
+ *
+ * A value block can still be accessed as a normal data block, but a data
+ * block may only be accessed as a value block if it follows certain data
+ * structure.
+ */
 typedef union {
-    uint8_t data[MFC_BLOCK_SIZE];
+    uint8_t data[MFC_BLOCK_SIZE];       /**< Raw data bytes */
     struct {
-        int32_t value;
-        int32_t n_value;
-        int32_t value_copy;
-        uint8_t addr;
-        uint8_t n_addr;
-        uint8_t addr_copy;
-        uint8_t n_addr_copy;
-    } value;
+        int32_t value;                  /**< 4 bytes of signed value */
+        int32_t n_value;                /**< Bit-wise inverted value */
+        int32_t value_copy;             /**< A copy of the value */
+        uint8_t addr;                   /**< Storage address of the block */
+        uint8_t n_addr;                 /**< Bit-wise inverted address */
+        uint8_t addr_copy;              /**< A copy of the address */
+        uint8_t n_addr_copy;            /**< A copy of the inverted address */
+    } value;                            /**< Access the block in data mode */
 } MfcDataBlock;
 #pragma pack(pop)
 
 #pragma pack(push, 1)
+/**
+ * @brief Mifare Classic sector trailer block
+ *
+ * This data structure corresponds to 16 bytes block at the end of a Mifare
+ * Classic sector, which stores the keys and access bits of the sector.
+ */
 typedef struct {
-    uint8_t key_a[6];
-    uint8_t access_bits[3];
-    uint8_t user_data;
-    uint8_t key_b[6];
+    uint8_t key_a[6];                   /**< Key A */
+    uint8_t access_bits[3];             /**< Access bits */
+    uint8_t user_data;                  /**< One byte not used for access control and can store user data */
+    uint8_t key_b[6];                   /**< Key B */
 } MfcSectorTrailer;
 #pragma pack(pop)
 
+/**
+ * @brief Mifare Classic access bits
+ *
+ * This is the three access bits for one block, not the three bytes data.
+ * It is used as a way to pass the access bits between functions.
+ */
 typedef struct {
     uint8_t c1;
     uint8_t c2;

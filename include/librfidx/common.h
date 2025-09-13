@@ -38,17 +38,27 @@
 
 typedef uint32_t RfidxStatus;
 
+/**
+ * @brief Type of tags
+ *
+ * Used for identification and return values.
+ */
 typedef enum {
-    TAG_UNSPECIFIED = 0,
-    NTAG_215,
-    AMIIBO,
-    TAG_UNKNOWN = -1,
-    TAG_ERROR = -2,
+    TAG_UNSPECIFIED = 0,        /**< Unspecified tag type, instructing the program to deduct the type */
+    NTAG_215,                   /**< NTAG 215 */
+    AMIIBO,                     /**< Nintendo Amiibo, an application level definition based on NTAG215 */
+    TAG_UNKNOWN = -1,           /**< Cannot deduct the tag type */
+    TAG_ERROR = -2,             /**< Error parsing the tag */
 } TagType;
 
+/**
+ * @brief String to tag type mapping
+ *
+ * A mapping container for string converting to TagType enum.
+ */
 typedef struct {
-    const char *name;
-    TagType value;
+    const char *name;           /**< Name in string format, from CLI parameter */
+    TagType value;              /**< TagType enum value to map to */
 } TagTypeMap;
 
 static const TagTypeMap tag_type_map[] = {
@@ -56,19 +66,29 @@ static const TagTypeMap tag_type_map[] = {
     {"ntag215", NTAG_215},
 };
 
+/**
+ * @brief Format of a dump file
+ *
+ * Used for identification and return values.
+ */
 typedef enum {
-    FORMAT_BINARY = 0,
-    FORMAT_JSON,
-    FORMAT_NFC,
-    FORMAT_EML,
-    FORMAT_UNKNOWN,
+    FORMAT_BINARY = 0,          /**< Binary dump */
+    FORMAT_JSON,                /**< Proxmark latest JSON format dump */
+    FORMAT_NFC,                 /**< Flipper Zero NFC format dump */
+    FORMAT_EML,                 /**< Proxmark old EML format dump */
+    FORMAT_UNKNOWN,             /**< Unknown format, cannot be deducted from the file content */
 } FileFormat;
 
+/**
+ * @brief Transformation command
+ *
+ * Commands to instruct the program to transform the dump data.
+ */
 typedef enum {
-    TRANSFORM_NONE = 0,
-    TRANSFORM_GENERATE,
-    TRANSFORM_RANDOMIZE_UID,
-    TRANSFORM_WIPE,
+    TRANSFORM_NONE = 0,         /**< No transformation. Data is exported as-is */
+    TRANSFORM_GENERATE,         /**< Generate a new tag with empty data */
+    TRANSFORM_RANDOMIZE_UID,    /**< Change the tag UID to a random one */
+    TRANSFORM_WIPE,             /**< Wipe all data from the tag, turn it into a blank state */
 } TransformCommand;
 
 RFIDX_EXPORT extern mbedtls_ctr_drbg_context rfidx_ctr_drbg;

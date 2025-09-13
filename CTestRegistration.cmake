@@ -21,6 +21,7 @@ set(TESTS
     test_amiibo_wipe
     test_rfidx_randomize_uid_ntag215
     test_rfidx_randomize_uid_amiibo
+    test_rfidx_generate_amiibo
 )
 
 foreach(TEST ${TESTS})
