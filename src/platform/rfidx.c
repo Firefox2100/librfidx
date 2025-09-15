@@ -308,7 +308,3 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
 
     return RFIDX_OK;
 }
-
-RfidxStatus main(const int argc, char ** argv) {
-    return rfidx_main(argc, argv, stdout, stderr);
-}

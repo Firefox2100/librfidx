@@ -3,6 +3,31 @@ set(TESTS
     test_ntag21x_validate_manufacturer_data_failed
     test_ntag21x_randomize_uid
     test_ntag21x_randomize_uid_failed
+    test_ntag215_parse_binary_data_only
+    test_ntag215_parse_binary_with_header
+    test_ntag215_parse_binary_invalid_length
+    test_ntag215_serialize_binary
+    test_ntag215_parse_header_from_json_success
+    test_ntag215_parse_header_from_json_missing_fields
+    test_ntag215_parse_header_from_json_invalid_hex
+    test_ntag215_parse_data_from_json_success
+    test_ntag215_parse_data_from_json_missing_or_invalid
+    test_ntag215_parse_json_success
+    test_ntag215_parse_json_errors
+    test_ntag215_dump_header_to_json
+    test_ntag215_dump_data_to_json
+    test_ntag215_serialize_json
+    test_ntag215_parse_nfc_success
+    test_ntag215_parse_nfc_errors
+    test_ntag215_serialize_nfc
+    test_ntag215_generate_success
+    test_ntag215_wipe
+    test_ntag215_transform_data_none
+    test_ntag215_transform_data_wipe
+    test_ntag215_transform_data_generate
+    test_ntag215_transform_data_randomize_uid_success
+    test_ntag215_transform_data_randomize_uid_failure
+    test_ntag215_transform_data_unknown
     test_ntag215_load_binary_dump
     test_ntag215_load_binary_dump_with_header
     test_ntag215_save_binary_and_reload

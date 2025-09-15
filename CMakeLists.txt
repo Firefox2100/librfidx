@@ -24,6 +24,7 @@ if(NO_PLATFORM)
         set(PLATFORM_SOURCES "")  # No platform-specific sources
 else()
         file(GLOB_RECURSE PLATFORM_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/*.c)
+        list(REMOVE_ITEM PLATFORM_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/main.c)
 endif()
 set(SOURCES ${CORE_SOURCES} ${PLATFORM_SOURCES})
 
@@ -56,7 +57,7 @@ target_link_libraries(librfidx_static PRIVATE
 )
 
 add_executable(rfidx
-        src/platform/rfidx.c
+        src/platform/main.c
 )
 set_target_properties(rfidx PROPERTIES OUTPUT_NAME rfidx)
 target_link_libraries(rfidx
@@ -76,7 +77,7 @@ if(BUILD_TESTS)
 
         file(GLOB_RECURSE TEST_SOURCE tests/*.c)
 
-        add_executable(unit_test 
+        add_executable(unit_test
                 ${TEST_SOURCE}
         )
 
@@ -101,8 +102,9 @@ if(BUILD_TESTS)
         )
 
         target_link_libraries(unit_test
-            librfidx_shared
+            librfidx_static
             cmocka
+            cjson
         )
 
         target_compile_definitions(unit_test PRIVATE UNIT_TESTING)

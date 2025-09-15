@@ -18,6 +18,34 @@
 
 #pragma pack(push, 1)
 /**
+ * @brief Mifare Classic family manufacturer data with 4-bytes NUID
+ *
+ * These bytes are read only after a tag is made
+ */
+typedef struct {
+    uint8_t nuid[3];                /**< NUID, 4 bytes */
+    uint8_t bcc;                    /**< BCC, 1 byte */
+    uint8_t manufacturer_data[12];  /**< Manufacturer data, 12 bytes */
+} MfcManufacturerData4B;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+/**
+ * @brief Mifare Classic family manufacturer data with 7-bytes UID
+ *
+ * These bytes are read only after a tag is made
+ */
+typedef struct {
+    uint8_t uid0[3];                /**< UID, 7 bytes */
+    uint8_t bcc0;                   /**< BCC0, 1 byte */
+    uint8_t uid1[4];                /**< UID, 7 bytes */
+    uint8_t bcc1;                   /**< BCC1, 1 byte */
+    uint8_t manufacturer_data[7];   /**< Manufacturer data, 7 bytes */
+} MfcManufacturerData7B;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+/**
  * @brief Mifare Classic data block
  *
  * This data structure corresponds to 16 bytes block in Mifare Classic,
@@ -82,6 +110,28 @@ MfcAccessBits mfc_get_access_bits_for_block(const MfcSectorTrailer *trailer, uin
 RfidxStatus mfc_set_access_bits_for_block(MfcSectorTrailer *trailer, uint8_t block, MfcAccessBits access_bits);
 RfidxStatus mfc_validate_access_bits(const MfcAccessBits *access_bits);
 
+/**
+ * @brief Validate the manufacturer data of a Mifare Classic tag
+ *
+ * Mifare Classic tags may have either 4-byte NUID or 7-byte UID. This function checks
+ * the manufacturer data structure and validates the UID/NUID and BCC bytes for validity.
+ * @param manufacturer_data Pointer to a 16-byte buffer containing the manufacturer data to validate.
+ * @return RfidxStatus indicating success or failure of the validation.
+ */
+RfidxStatus mfc_validate_manufacturer_data(const uint8_t *manufacturer_data);
+
+/**
+ * @brief Randomize the UID of a Mifare Classic tag
+ *
+ * Mifare Classic tags may have either 4-byte NUID or 7-byte UID. This function randomizes
+ * the UID/NUID while ensuring that the BCC bytes are correctly calculated.
+ * @param manufacturer_data Pointer to a 16-byte buffer containing the manufacturer data to randomize.
+ * @return RfidxStatus indicating success or failure of the randomization.
+ */
+RfidxStatus mfc_randomize_uid(const uint8_t *manufacturer_data);
+
+_Static_assert(sizeof(MfcManufacturerData4B) == 16, "Mifare Classic manufacturer data size mismatch");
+_Static_assert(sizeof(MfcManufacturerData7B) == 16, "Mifare Classic manufacturer data size mismatch");
 _Static_assert(sizeof(MfcDataBlock) == MFC_BLOCK_SIZE, "Mifare Classic 1K block size mismatch");
 _Static_assert(sizeof(MfcSectorTrailer) == MFC_BLOCK_SIZE, "Mifare Classic 1K sector trailer size mismatch");
 _Static_assert(sizeof(Mfc4BlockSector) == (MFC_BLOCK_SIZE * 4), "Mifare Classic 1K sector size mismatch");
