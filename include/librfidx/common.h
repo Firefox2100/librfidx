@@ -36,6 +36,8 @@
     #define RFIDX_EXPORT
 #endif
 
+#define JSON_FORMAT_CREATOR "librfidx"
+
 typedef uint32_t RfidxStatus;
 
 /**

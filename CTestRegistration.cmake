@@ -36,6 +36,12 @@ set(TESTS
     test_ntag215_save_json_dump_and_reload
     test_ntag215_load_nfc_dump_real
     test_ntag215_save_nfc_dump_and_reload
+    test_mfc1k_load_binary_dump_real
+    test_mfc1k_save_binary_and_reload
+    test_mfc1k_load_json_dump_real
+    test_mfc1k_save_json_dump_and_reload
+    test_mfc1k_load_nfc_dump_real
+    test_mfc1k_save_nfc_dump_and_reload
     test_amiibo_load_dumped_keys
     test_amiibo_save_dumped_keys_and_reload
     test_amiibo_derive_keys
@@ -44,6 +50,16 @@ set(TESTS
     test_amiibo_generate
     test_amiibo_sign_payload
     test_amiibo_wipe
+    test_rfidx_string_to_transform_command
+    test_rfidx_read_tag_from_file_ntag215
+    test_rfidx_read_tag_from_file_amiibo
+    test_rfidx_read_tag_from_file_unknown
+    test_rfidx_read_tag_from_file_missing
+    test_rfidx_save_tag_to_file_binary
+    test_rfidx_save_tag_to_file_invalid_format
+    test_rfidx_transform_tag_ntag215_wipe
+    test_rfidx_transform_tag_amiibo_missing_key
+    test_rfidx_transform_tag_unknown
     test_rfidx_randomize_uid_ntag215
     test_rfidx_randomize_uid_amiibo
     test_rfidx_generate_amiibo

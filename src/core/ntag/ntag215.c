@@ -238,7 +238,7 @@ cJSON *ntag215_dump_data_to_json(const Ntag215Data *ntag215) {
 
 char *ntag215_serialize_json(const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {
     cJSON *root = cJSON_CreateObject();
-    cJSON_AddStringToObject(root, "Created", "proxmark3");
+    cJSON_AddStringToObject(root, "Created", JSON_FORMAT_CREATOR);
     cJSON_AddStringToObject(root, "FileType", "mfu");
 
     cJSON_AddItemToObject(root, "Card", ntag215_dump_header_to_json(header));

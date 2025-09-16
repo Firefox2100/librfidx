@@ -23,8 +23,7 @@
  * These bytes are read only after a tag is made
  */
 typedef struct {
-    uint8_t nuid[3];                /**< NUID, 4 bytes */
-    uint8_t bcc;                    /**< BCC, 1 byte */
+    uint8_t nuid[4];                /**< NUID, 3 bytes */
     uint8_t manufacturer_data[12];  /**< Manufacturer data, 12 bytes */
 } MfcManufacturerData4B;
 #pragma pack(pop)
@@ -36,11 +35,8 @@ typedef struct {
  * These bytes are read only after a tag is made
  */
 typedef struct {
-    uint8_t uid0[3];                /**< UID, 7 bytes */
-    uint8_t bcc0;                   /**< BCC0, 1 byte */
-    uint8_t uid1[4];                /**< UID, 7 bytes */
-    uint8_t bcc1;                   /**< BCC1, 1 byte */
-    uint8_t manufacturer_data[7];   /**< Manufacturer data, 7 bytes */
+    uint8_t uid0[7];                /**< UID, 7 bytes */
+    uint8_t manufacturer_data[9];   /**< Manufacturer data, 9 bytes */
 } MfcManufacturerData7B;
 #pragma pack(pop)
 
@@ -106,7 +102,33 @@ typedef struct {
 } Mfc4BlockSector;
 #pragma pack(pop)
 
+/**
+ * @brief Metadata header for Mifare Classic family
+ *
+ * These data describes the tag, and are not part of the main
+ * memory structure. They are gathered from the tag using
+ * ISO/IEC 14443-3 commands.
+ * The struct is not packed, because this data is not present in
+ * the binary dumps, and is only used in JSON and NFC formats.
+ */
+typedef struct {
+    uint8_t uid[7];             /**< UID, up to 7 bytes. If the tag uses 4-bytes NUID, null terminate it.*/
+    uint8_t atqa[2];            /**< ATQA response */
+    uint8_t sak;                /**< SAK response */
+} MfcMetadataHeader;
+
+/**
+ * @brief Get the access bits for a specific block in a sector trailer
+ *
+ * Mifare Classic sectors have 4 blocks, the last of which is the sector trailer
+ * that contains the access bits for all 4 blocks. This function extracts the
+ * access bits for a specific block from the sector trailer.
+ * @param trailer Pointer to the sector trailer containing the access bits.
+ * @param block The block number (0-3) within the sector to get the access bits for.
+ * @return MfcAccessBits structure containing the access bits for the specified block.
+ */
 MfcAccessBits mfc_get_access_bits_for_block(const MfcSectorTrailer *trailer, uint8_t block);
+
 RfidxStatus mfc_set_access_bits_for_block(MfcSectorTrailer *trailer, uint8_t block, MfcAccessBits access_bits);
 RfidxStatus mfc_validate_access_bits(const MfcAccessBits *access_bits);
 

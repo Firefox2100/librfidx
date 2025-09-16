@@ -25,10 +25,58 @@ typedef union {
     Mfc1kRaw blocks;
     uint8_t bytes[MFC_1K_TOTAL_BYTES];
     struct {
-
+        Mfc4BlockSector sector[MFC_1K_NUM_SECTOR];
     } structure;
+    MfcManufacturerData4B manufacturer_data_4b;
+    MfcManufacturerData7B manufacturer_data_7b;
 } Mfc1kData;
 #pragma pack(pop)
+
+RfidxStatus mfc1k_parse_binary(
+    const uint8_t *buffer,
+    Mfc1kData *mfc1k,
+    MfcMetadataHeader *header
+);
+
+uint8_t *mfc1k_serialize_binary(
+    const Mfc1kData *mfc1k,
+    const MfcMetadataHeader *header
+);
+
+RfidxStatus mfc1k_parse_json(
+    const char *json_str,
+    Mfc1kData *mfc1k,
+    MfcMetadataHeader *header
+);
+
+char *mfc1k_serialize_json(
+    const Mfc1kData *mfc1k,
+    const MfcMetadataHeader *header
+);
+
+RfidxStatus mfc1k_parse_nfc(
+    const char *nfc_str,
+    Mfc1kData *mfc1k,
+    MfcMetadataHeader *header
+);
+
+char *mfc1k_serialize_nfc(
+    const Mfc1kData *mfc1k,
+    const MfcMetadataHeader *header
+);
+
+RfidxStatus mfc1k_generate(
+    Mfc1kData *mfc1k,
+    MfcMetadataHeader *header
+);
+
+RfidxStatus mfc1k_wipe(Mfc1kData* ntag215);
+
+RFIDX_EXPORT RfidxStatus mfc1k_transform_data(
+    Mfc1kData *mfc1k,
+    MfcMetadataHeader *header,
+    TransformCommand command
+);
 
 _Static_assert(sizeof(Mfc1kData) == MFC_1K_TOTAL_BYTES, "Mifare Classic 1K data size mismatch");
 

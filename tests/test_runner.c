@@ -15,6 +15,7 @@
 
 extern const struct CMUnitTest *get_ntag21x_tests(size_t *count);
 extern const struct CMUnitTest *get_ntag215_tests(size_t *count);
+extern const struct CMUnitTest *get_mfc1k_tests(size_t *count);
 
 extern const struct CMUnitTest *get_amiibo_tests(size_t *count);
 extern const struct CMUnitTest *get_rfidx_tests(size_t *count);
@@ -47,23 +48,27 @@ struct CombinedTests combine_test_arrays(
 int main(const int argc, char **argv) {
     size_t ntag21x_count;
     size_t ntag215_count;
+    size_t mfc1k_count;
     size_t amiibo_count;
     size_t rfidx_count;
 
     const struct CMUnitTest *ntag21x_tests = get_ntag21x_tests(&ntag21x_count);
     const struct CMUnitTest *ntag215_tests = get_ntag215_tests(&ntag215_count);
+    const struct CMUnitTest *mfc1k_tests = get_mfc1k_tests(&mfc1k_count);
     const struct CMUnitTest *amiibo_tests = get_amiibo_tests(&amiibo_count);
     const struct CMUnitTest *rfidx_tests = get_rfidx_tests(&rfidx_count);
 
     const struct CMUnitTest *test_arrays[] = {
         ntag21x_tests,
         ntag215_tests,
+        mfc1k_tests,
         amiibo_tests,
         rfidx_tests
     };
     const size_t test_counts[] = {
         ntag21x_count,
         ntag215_count,
+        mfc1k_count,
         amiibo_count,
         rfidx_count
     };
