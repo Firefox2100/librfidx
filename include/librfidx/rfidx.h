@@ -13,6 +13,28 @@
 #include <stdio.h>
 #include "librfidx/common.h"
 
+#define transform_format(data, header, output_format, filename)     \
+    _Generic((data),                                                \
+        Ntag215Data *: ntag215_transform_format,                    \
+        const Ntag215Data *: ntag215_transform_format,              \
+        default: unsupported_transform_format                       \
+    )(data, header, output_format, filename)
+
+#define LOAD_FROM_TEXT(FILENAME, PARSE_FN, OUT_PTR, OUT_TYPE, HDR_PTR, HDR_TYPE)        \
+    do {                                                                                \
+        typedef RfidxStatus (*rfidx__parse_sig_t)(const char*, OUT_TYPE*, HDR_TYPE*);   \
+        rfidx__parse_sig_t rfidx__pf = (PARSE_FN);                                      \
+        (void)rfidx__pf;                                                                \
+                                                                                        \
+        char *rfidx__buf = NULL;                                                        \
+        RfidxStatus rfidx__st = read_text_file((FILENAME), &rfidx__buf, NULL);          \
+        if (rfidx__st != RFIDX_OK) return rfidx__st;                                    \
+                                                                                        \
+        RfidxStatus rfidx__pst = rfidx__pf(rfidx__buf, (OUT_PTR), (HDR_PTR));           \
+        free(rfidx__buf);                                                               \
+        return rfidx__pst;                                                              \
+    } while (0)
+
 /**
  * @brief Dummy function for unsupported transformation format
  *
@@ -30,12 +52,7 @@ char *unsupported_transform_format(
     const char *filename
 );
 
-#define transform_format(data, header, output_format, filename)     \
-    _Generic((data),                                                \
-        Ntag215Data *: ntag215_transform_format,                    \
-        const Ntag215Data *: ntag215_transform_format,              \
-        default: unsupported_transform_format                       \
-    )(data, header, output_format, filename)
+RfidxStatus read_text_file(const char *filename, char **out_buf, size_t *out_len);
 
 /**
  * @brief Read a tag from a given file path

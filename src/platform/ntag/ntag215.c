@@ -15,6 +15,7 @@
 #include <cJSON.h>
 #include <ctype.h>
 #include "librfidx/ntag/ntag215.h"
+#include "librfidx/rfidx.h"
 
 RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
     FILE *file = fopen(filename, "rb");
@@ -83,42 +84,7 @@ RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag
 }
 
 RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
-    FILE *file = fopen(filename, "rb");
-    if (!file) {
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    fseek(file, 0, SEEK_END);
-    const long file_length = ftell(file);
-    if (file_length <= 0) {
-        fclose(file);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-    rewind(file);
-
-    char *buffer = malloc(file_length + 1);
-    if (!buffer) {
-        fclose(file);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    if (fread(buffer, 1, file_length, file) != (size_t) file_length) {
-        fclose(file);
-        free(buffer);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-
-    buffer[file_length] = '\0';
-    fclose(file);
-
-    const RfidxStatus parsing_status = ntag215_parse_json(buffer, ntag215, header);
-    if (parsing_status != RFIDX_OK) {
-        free(buffer);
-        return parsing_status;
-    }
-
-    free(buffer);
-    return RFIDX_OK;
+    LOAD_FROM_TEXT(filename, ntag215_parse_json, ntag215, Ntag215Data, header, Ntag21xMetadataHeader);
 }
 
 RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215,
@@ -145,37 +111,7 @@ RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag21
 }
 
 RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        return RFIDX_NFC_FILE_IO_ERROR;
-    }
-
-    fseek(file, 0, SEEK_END);
-    const long file_length = ftell(file);
-    if (file_length <= 0) {
-        fclose(file);
-        return RFIDX_JSON_FILE_IO_ERROR;
-    }
-    rewind(file);
-
-    char *buffer = malloc(file_length + 1);
-    if (!buffer) {
-        fclose(file);
-        return RFIDX_NFC_FILE_IO_ERROR;
-    }
-
-    if (fread(buffer, 1, file_length, file) != (size_t) file_length) {
-        fclose(file);
-        free(buffer);
-        return RFIDX_NFC_FILE_IO_ERROR;
-    }
-
-    buffer[file_length] = '\0';
-    fclose(file);
-
-    const RfidxStatus parsing_status = ntag215_parse_nfc(buffer, ntag215, header);
-    free(buffer);
-    return parsing_status;
+    LOAD_FROM_TEXT(filename, ntag215_parse_nfc, ntag215, Ntag215Data, header, Ntag21xMetadataHeader);
 }
 
 RfidxStatus ntag215_save_to_nfc(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {

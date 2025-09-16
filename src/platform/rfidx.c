@@ -16,6 +16,48 @@
 #include "librfidx/application/amiibo.h"
 #include "librfidx/rfidx.h"
 
+RfidxStatus read_text_file(const char *filename, char **out_buf, size_t *out_len) {
+    *out_buf = NULL;
+    if (out_len) *out_len = 0;
+
+    FILE *file = fopen(filename, "rb");
+    if (!file) {
+        return RFIDX_JSON_FILE_IO_ERROR;
+    }
+
+    if (fseek(file, 0, SEEK_END) != 0) {
+        fclose(file); return RFIDX_JSON_FILE_IO_ERROR;
+    }
+    const long file_length = ftell(file); if (file_length < 0) {
+        fclose(file); return RFIDX_JSON_FILE_IO_ERROR;
+    }
+
+    if (fseek(file, 0, SEEK_SET) != 0) {
+        fclose(file); return RFIDX_JSON_FILE_IO_ERROR;
+    }
+
+    const size_t len = (size_t)file_length;
+    char *buf = malloc(len + 1);
+    if (!buf) {
+        fclose(file);
+        return RFIDX_JSON_FILE_IO_ERROR;
+    }
+
+    const size_t rd = fread(buf, 1, len, file);
+    fclose(file);
+
+    if (rd != len) {
+        free(buf);
+        return RFIDX_JSON_FILE_IO_ERROR;
+    }
+    buf[len] = '\0';
+    *out_buf = buf;
+
+    if (out_len) *out_len = len;
+
+    return RFIDX_OK;
+}
+
 TagType read_tag_from_file(const char *filename, const TagType input_type, void **data, void **header) {
     switch (input_type) {
         case NTAG_215:
