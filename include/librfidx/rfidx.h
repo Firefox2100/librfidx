@@ -70,6 +70,13 @@ char *unsupported_transform_format(
 );
 
 RfidxStatus read_file(const char *filename, char **out_buf, size_t *out_len, uint32_t err_code);
+RfidxStatus write_file(
+    const char *filename,
+    const char *buffer,
+    size_t length,
+    bool binary,
+    uint32_t err_code
+);
 
 /**
  * @brief Read a tag from a given file path

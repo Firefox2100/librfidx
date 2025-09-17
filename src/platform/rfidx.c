@@ -62,6 +62,42 @@ RfidxStatus read_file(const char *filename, char **out_buf, size_t *out_len, con
     return RFIDX_OK;
 }
 
+RfidxStatus write_file(
+    const char *filename,
+    const char *buffer,
+    const size_t length,
+    const bool binary,
+    const uint32_t err_code
+) {
+    FILE *file;
+    if (binary) {
+        file = fopen(filename, "wb");
+
+        if (!file) {
+            return err_code;
+        }
+
+        if (fwrite(buffer, 1, length, file) != length) {
+            fclose(file);
+            return RFIDX_BINARY_FILE_IO_ERROR;
+        }
+    } else {
+        file = fopen(filename, "w");
+
+        if (!file) {
+            return err_code;
+        }
+
+        if (fputs(buffer, file) == EOF) {
+            fclose(file);
+            return err_code;
+        }
+    }
+
+    fclose(file);
+    return RFIDX_OK;
+}
+
 TagType read_tag_from_file(const char *filename, const TagType input_type, void **data, void **header) {
     switch (input_type) {
         case NTAG_215:
