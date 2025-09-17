@@ -58,7 +58,7 @@ char *remove_whitespace(const char *str) {
     char *write = result;
 
     while (*read) {
-        if (!isspace((unsigned char)*read)) {
+        if (!isspace((unsigned char) *read)) {
             *write++ = *read;
         }
         read++;
@@ -75,7 +75,7 @@ static int compare_tag_type_map(const void *a, const void *b) {
 }
 
 TagType string_to_tag_type(const char *str) {
-    const TagTypeMap key = { .name = str };
+    const TagTypeMap key = {.name = str};
     const size_t map_size = sizeof(tag_type_map) / sizeof(tag_type_map[0]);
 
     const TagTypeMap *result = bsearch(&key, tag_type_map, map_size, sizeof(TagTypeMap), compare_tag_type_map);
@@ -94,14 +94,14 @@ FileFormat string_to_file_format(const char *str) {
 void uint_to_str(unsigned int val, char *out, const size_t out_size) {
     if (out_size == 0) return;
 
-    out[out_size - 1] = '\0';  // ensure null-termination
-    int pos = (int)out_size - 2;
+    out[out_size - 1] = '\0'; // ensure null-termination
+    int pos = (int) out_size - 2;
     do {
         if (pos < 0) {
             out[0] = '\0'; // buffer too small
             return;
         }
-        out[pos--] = (char)('0' + (val % 10));
+        out[pos--] = (char) ('0' + (val % 10));
         val /= 10;
     } while (val > 0);
     memmove(out, &out[pos + 1], out_size - pos - 1);
@@ -153,10 +153,10 @@ int rfidx_init_rng(
     }
 
     const int ret = mbedtls_ctr_drbg_seed(&rfidx_ctr_drbg,
-        mbedtls_entropy_func,
-        &rfidx_entropy,
-        (const unsigned char *)personalization,
-        strlen(personalization)
+                                          mbedtls_entropy_func,
+                                          &rfidx_entropy,
+                                          (const unsigned char *) personalization,
+                                          strlen(personalization)
     );
 
     if (ret == 0) {

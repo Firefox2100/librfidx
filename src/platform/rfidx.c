@@ -16,31 +16,35 @@
 #include "librfidx/application/amiibo.h"
 #include "librfidx/rfidx.h"
 
-RfidxStatus read_text_file(const char *filename, char **out_buf, size_t *out_len) {
+RfidxStatus read_file(const char *filename, char **out_buf, size_t *out_len, const uint32_t err_code) {
     *out_buf = NULL;
     if (out_len) *out_len = 0;
 
     FILE *file = fopen(filename, "rb");
     if (!file) {
-        return RFIDX_JSON_FILE_IO_ERROR;
+        return err_code;
     }
 
     if (fseek(file, 0, SEEK_END) != 0) {
-        fclose(file); return RFIDX_JSON_FILE_IO_ERROR;
+        fclose(file);
+        return err_code;
     }
-    const long file_length = ftell(file); if (file_length < 0) {
-        fclose(file); return RFIDX_JSON_FILE_IO_ERROR;
+    const long file_length = ftell(file);
+    if (file_length < 0) {
+        fclose(file);
+        return err_code;
     }
 
     if (fseek(file, 0, SEEK_SET) != 0) {
-        fclose(file); return RFIDX_JSON_FILE_IO_ERROR;
+        fclose(file);
+        return err_code;
     }
 
-    const size_t len = (size_t)file_length;
+    const size_t len = (size_t) file_length;
     char *buf = malloc(len + 1);
     if (!buf) {
         fclose(file);
-        return RFIDX_JSON_FILE_IO_ERROR;
+        return RFIDX_MEMORY_ERROR;
     }
 
     const size_t rd = fread(buf, 1, len, file);
@@ -48,7 +52,7 @@ RfidxStatus read_text_file(const char *filename, char **out_buf, size_t *out_len
 
     if (rd != len) {
         free(buf);
-        return RFIDX_JSON_FILE_IO_ERROR;
+        return err_code;
     }
     buf[len] = '\0';
     *out_buf = buf;
@@ -61,13 +65,15 @@ RfidxStatus read_text_file(const char *filename, char **out_buf, size_t *out_len
 TagType read_tag_from_file(const char *filename, const TagType input_type, void **data, void **header) {
     switch (input_type) {
         case NTAG_215:
-            if (ntag215_read_from_file(filename, (Ntag215Data **)data, (Ntag21xMetadataHeader **)header) != RFIDX_OK) {
+            if (ntag215_read_from_file(filename, (Ntag215Data **) data, (Ntag21xMetadataHeader **) header) !=
+                RFIDX_OK) {
                 fprintf(stderr, "NTAG215 data reading failed.\n");
                 return TAG_ERROR;
             }
             return NTAG_215;
         case AMIIBO:
-            if (ntag215_read_from_file(filename, (Ntag215Data **)data, (Ntag21xMetadataHeader **)header) != RFIDX_OK) {
+            if (ntag215_read_from_file(filename, (Ntag215Data **) data, (Ntag21xMetadataHeader **) header) !=
+                RFIDX_OK) {
                 fprintf(stderr, "Amiibo data reading failed.\n");
                 return TAG_ERROR;
             }
@@ -124,13 +130,13 @@ RfidxStatus transform_tag(
     void **header,
     const char *uuid,
     const char *retail_key
-    ) {
+) {
     // Initialize the DRNG first
     rfidx_init_rng(NULL, NULL);
 
     switch (tag_type) {
         case NTAG_215:
-            return ntag215_transform_data((Ntag215Data**)data, (Ntag21xMetadataHeader**)header, command);
+            return ntag215_transform_data((Ntag215Data **) data, (Ntag21xMetadataHeader **) header, command);
         case AMIIBO:
             // Convert the uuid to uint8_t array
             uint8_t uuid_bytes[8] = {0};
@@ -154,8 +160,8 @@ RfidxStatus transform_tag(
             }
 
             return amiibo_transform_data(
-                (AmiiboData **)data,
-                (Ntag21xMetadataHeader **)header,
+                (AmiiboData **) data,
+                (Ntag21xMetadataHeader **) header,
                 command,
                 uuid_bytes,
                 &dumped_keys
@@ -167,22 +173,22 @@ RfidxStatus transform_tag(
 
 static void usage(const char *executable_name, FILE *stream) {
     fprintf(stream,
-        "rfidx by Firefox2100\n\n"
-        "Usage: %s [-i <input-file-name>] [-I <input-type>] [-o <output-file-name> -F <output-format>] "
-        "[-t <transform-command>] [-h]\n\n"
-        "Standard options:\n"
-        "   -i/--input <path> Input file path. If not needed (e.g. synthesising dump), can be omitted.\n"
-        "   -o/--output <path> Output file path. Omit to use stdout.\n"
-        "   -I/--input-type <type> Input tag type. Omit to automatically detect.\n"
-        "   -F/--output-format <format> Output format. Must be specified with -o option.\n"
-        "   -t/--transform <command> Transform command.\n"
-        "   -h/--help Show this help message.\n\n"
-        "Special parameters for different modes:\n"
-        "   --uuid <UUID> Specify a UUID for the tag. This is used for generating a new "
-        "Amiibo with given character information.\n"
-        "   --retail-key <path> Specify a retail key for the tag. This is used for all "
-        "Amiibo operations that require manipulation of the data.\n",
-        executable_name
+            "rfidx by Firefox2100\n\n"
+            "Usage: %s [-i <input-file-name>] [-I <input-type>] [-o <output-file-name> -F <output-format>] "
+            "[-t <transform-command>] [-h]\n\n"
+            "Standard options:\n"
+            "   -i/--input <path> Input file path. If not needed (e.g. synthesising dump), can be omitted.\n"
+            "   -o/--output <path> Output file path. Omit to use stdout.\n"
+            "   -I/--input-type <type> Input tag type. Omit to automatically detect.\n"
+            "   -F/--output-format <format> Output format. Must be specified with -o option.\n"
+            "   -t/--transform <command> Transform command.\n"
+            "   -h/--help Show this help message.\n\n"
+            "Special parameters for different modes:\n"
+            "   --uuid <UUID> Specify a UUID for the tag. This is used for generating a new "
+            "Amiibo with given character information.\n"
+            "   --retail-key <path> Specify a retail key for the tag. This is used for all "
+            "Amiibo operations that require manipulation of the data.\n",
+            executable_name
     );
 }
 
@@ -194,24 +200,24 @@ TransformCommand string_to_transform_command(const char *str) {
     return TRANSFORM_NONE;
 }
 
-RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *error_stream) {
+RfidxStatus rfidx_main(const int argc, char **argv, FILE *output_stream, FILE *error_stream) {
     const char *executable_name = argv[0];
 
-    const char * input_file = NULL;
-    const char * output_file = NULL;
-    const char * input_type = NULL;
-    const char * output_format = NULL;
-    const char * transform_command = NULL;
-    const char * uuid = NULL;
-    const char * retail_key = NULL;
+    const char *input_file = NULL;
+    const char *output_file = NULL;
+    const char *input_type = NULL;
+    const char *output_format = NULL;
+    const char *transform_command = NULL;
+    const char *uuid = NULL;
+    const char *retail_key = NULL;
 
     static struct option long_options[] = {
-        {"input",         required_argument, 0, 'i'},
-        {"input-type",  required_argument, 0,  'I' },
-        {"output",        required_argument, 0, 'o'},
-        {"output-format", required_argument, 0,  'F' },
-        {"transform", required_argument, 0,  't' },
-        {"help",          no_argument,       0,  'h' },
+        {"input", required_argument, 0, 'i'},
+        {"input-type", required_argument, 0, 'I'},
+        {"output", required_argument, 0, 'o'},
+        {"output-format", required_argument, 0, 'F'},
+        {"transform", required_argument, 0, 't'},
+        {"help", no_argument, 0, 'h'},
         {"uuid", required_argument, 0, 1000},
         {"retail-key", required_argument, 0, 1001},
         {0, 0, 0, 0}
@@ -219,7 +225,7 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
 
     int opt;
     int long_index = 0;
-    optind = 1;     // Reset the index for getopt_long in case it's called multiple times
+    optind = 1; // Reset the index for getopt_long in case it's called multiple times
 
     while ((opt = getopt_long(argc, argv, "i:o:I:F:t:h", long_options, &long_index)) != -1) {
         switch (opt) {
@@ -289,13 +295,14 @@ RfidxStatus rfidx_main(const int argc, char ** argv, FILE *output_stream, FILE *
         }
     }
 
-    void * data = NULL;
-    void * header = NULL;
+    void *data = NULL;
+    void *header = NULL;
 
     if (input_file != NULL) {
         tag_type = read_tag_from_file(input_file, tag_type, &data, &header);
         if (tag_type == TAG_UNKNOWN) {
-            fprintf(error_stream, "Tag type not recognized or not supported; try again by manually specifying the type.\n");
+            fprintf(error_stream,
+                    "Tag type not recognized or not supported; try again by manually specifying the type.\n");
             usage(executable_name, error_stream);
 
             if (data) free(data);

@@ -20,19 +20,36 @@
         default: unsupported_transform_format                       \
     )(data, header, output_format, filename)
 
-#define LOAD_FROM_TEXT(FILENAME, PARSE_FN, OUT_PTR, OUT_TYPE, HDR_PTR, HDR_TYPE)        \
-    do {                                                                                \
-        typedef RfidxStatus (*rfidx__parse_sig_t)(const char*, OUT_TYPE*, HDR_TYPE*);   \
-        rfidx__parse_sig_t rfidx__pf = (PARSE_FN);                                      \
-        (void)rfidx__pf;                                                                \
-                                                                                        \
-        char *rfidx__buf = NULL;                                                        \
-        RfidxStatus rfidx__st = read_text_file((FILENAME), &rfidx__buf, NULL);          \
-        if (rfidx__st != RFIDX_OK) return rfidx__st;                                    \
-                                                                                        \
-        RfidxStatus rfidx__pst = rfidx__pf(rfidx__buf, (OUT_PTR), (HDR_PTR));           \
-        free(rfidx__buf);                                                               \
-        return rfidx__pst;                                                              \
+#define LOAD_FROM_TEXT_FILE(FILENAME, PARSE_FN, OUT_PTR, OUT_TYPE, HDR_PTR, HDR_TYPE, ERR_CODE) \
+    do {                                                                                        \
+        typedef RfidxStatus (*rfidx__parse_sig_t)(const char*, OUT_TYPE*, HDR_TYPE*);           \
+        rfidx__parse_sig_t rfidx__pf = (PARSE_FN);                                              \
+        (void)rfidx__pf;                                                                        \
+                                                                                                \
+        char *rfidx__buf = NULL;                                                                \
+        RfidxStatus rfidx__st = read_file((FILENAME), &rfidx__buf, NULL, ERR_CODE);             \
+        if (rfidx__st != RFIDX_OK) return rfidx__st;                                            \
+                                                                                                \
+        RfidxStatus rfidx__pst = rfidx__pf(rfidx__buf, (OUT_PTR), (HDR_PTR));                   \
+        free(rfidx__buf);                                                                       \
+        return rfidx__pst;                                                                      \
+    } while (0)
+
+#define LOAD_FROM_BINARY_FILE(FILENAME, PARSE_FN, OUT_PTR, OUT_TYPE, HDR_PTR, HDR_TYPE, ERR_CODE)       \
+    do {                                                                                                \
+        typedef RfidxStatus (*rfidx__parse_sig_t)(const uint8_t*, const size_t, OUT_TYPE*, HDR_TYPE*);  \
+        rfidx__parse_sig_t rfidx__pf = (PARSE_FN);                                                      \
+        (void)rfidx__pf;                                                                                \
+                                                                                                        \
+        char *rfidx__buf = NULL;                                                                        \
+        size_t rfidx__buf_len = 0;                                                                      \
+        RfidxStatus rfidx__st = read_file((FILENAME), &rfidx__buf, &rfidx__buf_len, ERR_CODE);          \
+        if (rfidx__st != RFIDX_OK) return rfidx__st;                                                    \
+                                                                                                        \
+        RfidxStatus rfidx__pst = rfidx__pf(                                                             \
+            (const uint8_t *)rfidx__buf, rfidx__buf_len, (OUT_PTR), (HDR_PTR));                         \
+        free(rfidx__buf);                                                                               \
+        return rfidx__pst;                                                                              \
     } while (0)
 
 /**
@@ -52,7 +69,7 @@ char *unsupported_transform_format(
     const char *filename
 );
 
-RfidxStatus read_text_file(const char *filename, char **out_buf, size_t *out_len);
+RfidxStatus read_file(const char *filename, char **out_buf, size_t *out_len, uint32_t err_code);
 
 /**
  * @brief Read a tag from a given file path

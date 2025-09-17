@@ -14,7 +14,8 @@
 #include "librfidx/common.h"
 #include "librfidx/ntag/ntag215_core.h"
 
-RfidxStatus ntag215_parse_binary(const uint8_t *buffer, const size_t len, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
+RfidxStatus ntag215_parse_binary(const uint8_t *buffer, const size_t len, Ntag215Data *ntag215,
+                                 Ntag21xMetadataHeader *header) {
     if (len == sizeof(Ntag215Data)) {
         memcpy(ntag215, buffer, sizeof(Ntag215Data));
         return RFIDX_OK;
@@ -327,7 +328,7 @@ RfidxStatus ntag215_parse_nfc(const char *nfc_str, Ntag215Data *ntag215, Ntag21x
                     header->memory_max = (uint8_t) strtol(val, NULL, 10) - 1;
                 } else if (strncmp(key, "Page ", 5) == 0) {
                     char *endptr;
-                    const uint32_t page = (uint32_t)strtoul(key + 5, &endptr, 10);
+                    const uint32_t page = (uint32_t) strtoul(key + 5, &endptr, 10);
                     if (val == endptr) {
                         free(line);
                         return RFIDX_NFC_PARSE_ERROR;
@@ -408,7 +409,7 @@ char *ntag215_serialize_nfc(const Ntag215Data *ntag215, const Ntag21xMetadataHea
     return buf;
 }
 
-RfidxStatus ntag215_generate(Ntag215Data* ntag215, Ntag21xMetadataHeader *header) {
+RfidxStatus ntag215_generate(Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
     // Re-initialize the memory space
     memset(ntag215, 0, sizeof(Ntag215Data));
     memset(header, 0, sizeof(Ntag21xMetadataHeader));
@@ -419,7 +420,7 @@ RfidxStatus ntag215_generate(Ntag215Data* ntag215, Ntag21xMetadataHeader *header
     return RFIDX_OK;
 }
 
-RfidxStatus ntag215_wipe(Ntag215Data* ntag215) {
+RfidxStatus ntag215_wipe(Ntag215Data *ntag215) {
     // Reset all user memory pages
     for (int i = 0; i < NTAG215_NUM_USER_PAGES; i++) {
         memset(ntag215->structure.user_memory[i], 0, NTAG21X_PAGE_SIZE);

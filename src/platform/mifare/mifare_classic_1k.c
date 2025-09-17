@@ -17,36 +17,14 @@
 #include "librfidx/rfidx.h"
 
 RfidxStatus mfc1k_load_from_binary(const char *filename, Mfc1kData *mfc1k, MfcMetadataHeader *header) {
-    FILE *file = fopen(filename, "rb");
-    if (!file) return RFIDX_BINARY_FILE_IO_ERROR;
-
-    if (fseek(file, 0, SEEK_END) != 0) {
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-    const long filesize = ftell(file);
-    if (filesize <= 0) {
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-    rewind(file);
-
-    uint8_t *buffer = malloc(filesize);
-    if (!buffer) {
-        fclose(file);
-        return RFIDX_MEMORY_ERROR;
-    }
-
-    if (fread(buffer, 1, filesize, file) != (size_t) filesize) {
-        free(buffer);
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-
-    const RfidxStatus status = mfc1k_parse_binary(buffer, mfc1k, header);
-    free(buffer);
-    fclose(file);
-    return status;
+    LOAD_FROM_BINARY_FILE(
+        filename,
+        mfc1k_parse_binary,
+        mfc1k,
+        Mfc1kData,
+        header,
+        MfcMetadataHeader,
+        RFIDX_BINARY_FILE_IO_ERROR);
 }
 
 RfidxStatus mfc1k_save_to_binary(const char *filename, const Mfc1kData *mfc1k,
@@ -69,7 +47,14 @@ RfidxStatus mfc1k_save_to_binary(const char *filename, const Mfc1kData *mfc1k,
 }
 
 RfidxStatus mfc1k_load_from_json(const char *filename, Mfc1kData *mfc1k, MfcMetadataHeader *header) {
-    LOAD_FROM_TEXT(filename, mfc1k_parse_json, mfc1k, Mfc1kData, header, MfcMetadataHeader);
+    LOAD_FROM_TEXT_FILE(
+        filename,
+        mfc1k_parse_json,
+        mfc1k,
+        Mfc1kData,
+        header,
+        MfcMetadataHeader,
+        RFIDX_JSON_FILE_IO_ERROR);
 }
 
 RfidxStatus mfc1k_save_to_json(const char *filename, const Mfc1kData *mfc1k,
@@ -96,7 +81,14 @@ RfidxStatus mfc1k_save_to_json(const char *filename, const Mfc1kData *mfc1k,
 }
 
 RfidxStatus mfc1k_load_from_nfc(const char *filename, Mfc1kData *mfc1k, MfcMetadataHeader *header) {
-    LOAD_FROM_TEXT(filename, mfc1k_parse_nfc, mfc1k, Mfc1kData, header, MfcMetadataHeader);
+    LOAD_FROM_TEXT_FILE(
+        filename,
+        mfc1k_parse_nfc,
+        mfc1k,
+        Mfc1kData,
+        header,
+        MfcMetadataHeader,
+        RFIDX_NFC_FILE_IO_ERROR);
 }
 
 RfidxStatus mfc1k_save_to_nfc(

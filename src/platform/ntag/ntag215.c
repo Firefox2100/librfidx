@@ -18,36 +18,14 @@
 #include "librfidx/rfidx.h"
 
 RfidxStatus ntag215_load_from_binary(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
-    FILE *file = fopen(filename, "rb");
-    if (!file) return RFIDX_BINARY_FILE_IO_ERROR;
-
-    if (fseek(file, 0, SEEK_END) != 0) {
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-    const long filesize = ftell(file);
-    if (filesize <= 0) {
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-    rewind(file);
-
-    uint8_t *buffer = malloc(filesize);
-    if (!buffer) {
-        fclose(file);
-        return RFIDX_MEMORY_ERROR;
-    }
-
-    if (fread(buffer, 1, filesize, file) != (size_t) filesize) {
-        free(buffer);
-        fclose(file);
-        return RFIDX_BINARY_FILE_IO_ERROR;
-    }
-
-    const RfidxStatus status = ntag215_parse_binary(buffer, (size_t) filesize, ntag215, header);
-    free(buffer);
-    fclose(file);
-    return status;
+    LOAD_FROM_BINARY_FILE(
+        filename,
+        ntag215_parse_binary,
+        ntag215,
+        Ntag215Data,
+        header,
+        Ntag21xMetadataHeader,
+        RFIDX_BINARY_FILE_IO_ERROR);
 }
 
 RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag215,
@@ -84,7 +62,14 @@ RfidxStatus ntag215_save_to_binary(const char *filename, const Ntag215Data *ntag
 }
 
 RfidxStatus ntag215_load_from_json(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
-    LOAD_FROM_TEXT(filename, ntag215_parse_json, ntag215, Ntag215Data, header, Ntag21xMetadataHeader);
+    LOAD_FROM_TEXT_FILE(
+        filename,
+        ntag215_parse_json,
+        ntag215,
+        Ntag215Data,
+        header,
+        Ntag21xMetadataHeader,
+        RFIDX_JSON_FILE_IO_ERROR);
 }
 
 RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag215,
@@ -111,7 +96,14 @@ RfidxStatus ntag215_save_to_json(const char *filename, const Ntag215Data *ntag21
 }
 
 RfidxStatus ntag215_load_from_nfc(const char *filename, Ntag215Data *ntag215, Ntag21xMetadataHeader *header) {
-    LOAD_FROM_TEXT(filename, ntag215_parse_nfc, ntag215, Ntag215Data, header, Ntag21xMetadataHeader);
+    LOAD_FROM_TEXT_FILE(
+        filename,
+        ntag215_parse_nfc,
+        ntag215,
+        Ntag215Data,
+        header,
+        Ntag21xMetadataHeader,
+        RFIDX_NFC_FILE_IO_ERROR);
 }
 
 RfidxStatus ntag215_save_to_nfc(const char *filename, const Ntag215Data *ntag215, const Ntag21xMetadataHeader *header) {

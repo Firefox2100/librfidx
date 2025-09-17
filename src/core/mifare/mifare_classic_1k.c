@@ -14,13 +14,17 @@
 #include "librfidx/common.h"
 #include "librfidx/mifare/mifare_classic_1k_core.h"
 
-RfidxStatus mfc1k_parse_binary(const uint8_t *buffer, Mfc1kData *mfc1k, MfcMetadataHeader *header) {
+RfidxStatus mfc1k_parse_binary(
+    const uint8_t *buffer,
+    const size_t len,
+    Mfc1kData *mfc1k,
+    MfcMetadataHeader *header) {
     memcpy(mfc1k, buffer, sizeof(Mfc1kData));
 
     // Headers are not present in binary dumps, but all bytes are known
     header->atqa[0] = 0x00;
     header->atqa[1] = 0x04; // Mifare Classic
-    header->sak = 0x08;    // Mifare Classic 1K
+    header->sak = 0x08; // Mifare Classic 1K
 
     // Always assume a 4-byte NUID
     memcpy(header->uid, mfc1k->manufacturer_data_4b.nuid, 4);
@@ -46,14 +50,16 @@ RfidxStatus mfc1k_parse_header_from_json(const cJSON *card_obj, MfcMetadataHeade
     }
     // Check the length of the string first to determine if it's 4-byte NUID or 7-byte UID
     const size_t uid_len = strnlen(item->valuestring, 15);
-    if (uid_len == 8) { // 4-byte NUID
+    if (uid_len == 8) {
+        // 4-byte NUID
         if (hex_to_bytes(item->valuestring, header->uid, 4) != RFIDX_OK) {
             return RFIDX_JSON_PARSE_ERROR;
         }
         header->uid[4] = 0x00;
         header->uid[5] = 0x00;
         header->uid[6] = 0x00;
-    } else if (uid_len == 14) { // 7-byte UID
+    } else if (uid_len == 14) {
+        // 7-byte UID
         if (hex_to_bytes(item->valuestring, header->uid, 7) != RFIDX_OK) {
             return RFIDX_JSON_PARSE_ERROR;
         }
@@ -258,7 +264,8 @@ RfidxStatus mfc1k_parse_nfc(const char *nfc_str, Mfc1kData *mfc1k, MfcMetadataHe
                 if (strncmp(key, "UID", 3) == 0) {
                     // Check the length of the string first to determine if it's 4-byte NUID or 7-byte UID
                     const size_t uid_len = strnlen(clean, 15);
-                    if (uid_len == 8) { // 4-byte NUID
+                    if (uid_len == 8) {
+                        // 4-byte NUID
                         if (hex_to_bytes(clean, header->uid, 4) != RFIDX_OK) {
                             free(line);
                             return RFIDX_NFC_PARSE_ERROR;
@@ -266,7 +273,8 @@ RfidxStatus mfc1k_parse_nfc(const char *nfc_str, Mfc1kData *mfc1k, MfcMetadataHe
                         header->uid[4] = 0x00;
                         header->uid[5] = 0x00;
                         header->uid[6] = 0x00;
-                    } else if (uid_len == 14) { // 7-byte UID
+                    } else if (uid_len == 14) {
+                        // 7-byte UID
                         if (hex_to_bytes(clean, header->uid, 7) != RFIDX_OK) {
                             free(line);
                             return RFIDX_NFC_PARSE_ERROR;
@@ -287,7 +295,7 @@ RfidxStatus mfc1k_parse_nfc(const char *nfc_str, Mfc1kData *mfc1k, MfcMetadataHe
                     }
                 } else if (strncmp(key, "Block ", 6) == 0) {
                     char *endptr;
-                    const uint32_t page = (uint32_t)strtoul(key + 5, &endptr, 10);
+                    const uint32_t page = (uint32_t) strtoul(key + 5, &endptr, 10);
                     if (val == endptr) {
                         free(line);
                         return RFIDX_NFC_PARSE_ERROR;
@@ -343,7 +351,8 @@ char *mfc1k_serialize_nfc(const Mfc1kData *mfc1k, const MfcMetadataHeader *heade
 
     for (int i = 0; i < MFC_1K_NUM_SECTOR; i++) {
         for (int j = 0; j < MFC_1K_NUM_BLOCK_PER_SECTOR; j++) {
-            appendf(&buf, &len, &cap, "Block %d: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
+            appendf(&buf, &len, &cap,
+                    "Block %d: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
                     i * MFC_1K_NUM_BLOCK_PER_SECTOR + j,
                     mfc1k->blocks[i][j][0], mfc1k->blocks[i][j][1],
                     mfc1k->blocks[i][j][2], mfc1k->blocks[i][j][3],

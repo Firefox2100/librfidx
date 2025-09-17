@@ -23,7 +23,8 @@ MfcAccessBits mfc_get_access_bits_for_block(const MfcSectorTrailer *trailer, con
     return ab;
 }
 
-RfidxStatus mfc_set_access_bits_for_block(MfcSectorTrailer *trailer, const uint8_t block, const MfcAccessBits access_bits) {
+RfidxStatus mfc_set_access_bits_for_block(MfcSectorTrailer *trailer, const uint8_t block,
+                                          const MfcAccessBits access_bits) {
     if (block > 3) return RFIDX_MFC_ACCESS_BITS_ERROR;
 
     trailer->access_bits[1] &= ~(1 << block);

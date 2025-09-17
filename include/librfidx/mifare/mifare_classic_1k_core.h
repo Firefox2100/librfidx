@@ -34,6 +34,7 @@ typedef union {
 
 RfidxStatus mfc1k_parse_binary(
     const uint8_t *buffer,
+    size_t len,
     Mfc1kData *mfc1k,
     MfcMetadataHeader *header
 );

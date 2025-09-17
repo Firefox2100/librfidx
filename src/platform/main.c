@@ -10,6 +10,6 @@
 #include <stdio.h>
 #include "librfidx/rfidx.h"
 
-RfidxStatus main(const int argc, char ** argv) {
+RfidxStatus main(const int argc, char **argv) {
     return rfidx_main(argc, argv, stdout, stderr);
 }

@@ -75,7 +75,7 @@ RfidxStatus amiibo_derive_key(
     mbedtls_md_hmac_starts(&hmac_context, input_key->hmacKey, sizeof(input_key->hmacKey));
 
     size_t output_size = sizeof(DerivedKey);
-    curr = (uint8_t *)derived_key;
+    curr = (uint8_t *) derived_key;
     while (output_size > 0) {
         if (output_size < 32) {
             uint8_t temp[32];
@@ -94,7 +94,7 @@ RfidxStatus amiibo_derive_key(
     return RFIDX_OK;
 }
 
-RfidxStatus amiibo_cipher(const DerivedKey *data_key, AmiiboData* amiibo_data) {
+RfidxStatus amiibo_cipher(const DerivedKey *data_key, AmiiboData *amiibo_data) {
     // Prepare the AES context and IV
     mbedtls_aes_context aes;
     unsigned char nonce_counter[16];
@@ -133,7 +133,7 @@ RfidxStatus amiibo_cipher(const DerivedKey *data_key, AmiiboData* amiibo_data) {
 RfidxStatus amiibo_generate_signature(
     const DerivedKey *tag_key,
     const DerivedKey *data_key,
-    const AmiiboData* amiibo_data,
+    const AmiiboData *amiibo_data,
     uint8_t *tag_hash,
     uint8_t *data_hash
 ) {
@@ -159,7 +159,7 @@ RfidxStatus amiibo_generate_signature(
         mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),
         data_key->hmacKey,
         sizeof(data_key->hmacKey),
-        signing_buffer + 1,             // 1 byte offset, it does not take the fixed 0xA5 into calculation
+        signing_buffer + 1, // 1 byte offset, it does not take the fixed 0xA5 into calculation
         479,
         data_hash
     );
@@ -170,7 +170,7 @@ RfidxStatus amiibo_generate_signature(
 RfidxStatus amiibo_validate_signature(
     const DerivedKey *tag_key,
     const DerivedKey *data_key,
-    const AmiiboData* amiibo_data
+    const AmiiboData *amiibo_data
 ) {
     uint8_t tag_hash[32];
     uint8_t data_hash[32];
@@ -200,7 +200,7 @@ RfidxStatus amiibo_validate_signature(
 RfidxStatus amiibo_sign_payload(
     const DerivedKey *tag_key,
     const DerivedKey *data_key,
-    AmiiboData* amiibo_data
+    AmiiboData *amiibo_data
 ) {
     const RfidxStatus status = amiibo_generate_signature(
         tag_key,
@@ -213,7 +213,7 @@ RfidxStatus amiibo_sign_payload(
     return status;
 }
 
-RfidxStatus amiibo_format_dump(AmiiboData* amiibo_data, Ntag21xMetadataHeader *header) {
+RfidxStatus amiibo_format_dump(AmiiboData *amiibo_data, Ntag21xMetadataHeader *header) {
     // Tag manufacturer data
     amiibo_data->ntag215.structure.manufacturer_data.internal = 0x48;
     amiibo_data->ntag215.structure.manufacturer_data.lock[0] = 0x0F;
@@ -230,16 +230,16 @@ RfidxStatus amiibo_format_dump(AmiiboData* amiibo_data, Ntag21xMetadataHeader *h
 
     // Generate the tag password
     amiibo_data->ntag215.structure.configuration.passwd[0] =
-        amiibo_data->ntag215.structure.manufacturer_data.uid0[1] ^
+            amiibo_data->ntag215.structure.manufacturer_data.uid0[1] ^
             amiibo_data->ntag215.structure.manufacturer_data.uid1[0] ^ 0xAA;
     amiibo_data->ntag215.structure.configuration.passwd[1] =
-        amiibo_data->ntag215.structure.manufacturer_data.uid0[2] ^
+            amiibo_data->ntag215.structure.manufacturer_data.uid0[2] ^
             amiibo_data->ntag215.structure.manufacturer_data.uid1[1] ^ 0x55;
     amiibo_data->ntag215.structure.configuration.passwd[2] =
-        amiibo_data->ntag215.structure.manufacturer_data.uid1[0] ^
+            amiibo_data->ntag215.structure.manufacturer_data.uid1[0] ^
             amiibo_data->ntag215.structure.manufacturer_data.uid1[2] ^ 0xAA;
     amiibo_data->ntag215.structure.configuration.passwd[3] =
-        amiibo_data->ntag215.structure.manufacturer_data.uid1[1] ^
+            amiibo_data->ntag215.structure.manufacturer_data.uid1[1] ^
             amiibo_data->ntag215.structure.manufacturer_data.uid1[3] ^ 0x55;
 
     // PACK
@@ -255,7 +255,7 @@ RfidxStatus amiibo_format_dump(AmiiboData* amiibo_data, Ntag21xMetadataHeader *h
 
 RfidxStatus amiibo_generate(
     const uint8_t *uuid,
-    AmiiboData* amiibo_data,
+    AmiiboData *amiibo_data,
     Ntag21xMetadataHeader *header
 ) {
     // Re-initialize the memory space
@@ -287,7 +287,7 @@ RfidxStatus amiibo_generate(
 }
 
 RfidxStatus amiibo_wipe(
-    AmiiboData* amiibo_data
+    AmiiboData *amiibo_data
 ) {
     // Clear application data
     memset(&amiibo_data->amiibo.data, 0, sizeof(AmiiboApplicationData));

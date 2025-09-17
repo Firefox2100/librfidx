@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include "librfidx/application/amiibo.h"
 
-RfidxStatus amiibo_load_dumped_keys(const char* filename, DumpedKeys *dumped_keys) {
-    FILE * f = fopen(filename, "rb");
+RfidxStatus amiibo_load_dumped_keys(const char *filename, DumpedKeys *dumped_keys) {
+    FILE *f = fopen(filename, "rb");
 
     if (!f) {
         return RFIDX_AMIIBO_KEY_IO_ERROR;
@@ -33,8 +33,8 @@ RfidxStatus amiibo_load_dumped_keys(const char* filename, DumpedKeys *dumped_key
     return RFIDX_OK;
 }
 
-RfidxStatus amiibo_save_dumped_keys(const char* filename, const DumpedKeys* keys) {
-    FILE * f = fopen(filename, "wb");
+RfidxStatus amiibo_save_dumped_keys(const char *filename, const DumpedKeys *keys) {
+    FILE *f = fopen(filename, "wb");
 
     if (!f) {
         return RFIDX_AMIIBO_KEY_IO_ERROR;
