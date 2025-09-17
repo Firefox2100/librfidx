@@ -9,6 +9,8 @@
 
 #include "librfidx/mifare/mifare_classic.h"
 
+#include <string.h>
+
 MfcAccessBits mfc_get_access_bits_for_block(const MfcSectorTrailer *trailer, const uint8_t block) {
     MfcAccessBits ab = {0};
 
@@ -57,6 +59,39 @@ RfidxStatus mfc_validate_access_bits(const MfcAccessBits *access_bits) {
 
     if ((access_bits->c1 & ~0x01) || (access_bits->c2 & ~0x01) || (access_bits->c3 & ~0x01)) {
         return RFIDX_MFC_ACCESS_BITS_ERROR;
+    }
+
+    return RFIDX_OK;
+}
+
+RfidxStatus mfc_validate_manufacturer_data(const uint8_t *manufacturer_data) {
+    // There is no validation for Mifare Classic manufacturer data
+    return RFIDX_OK;
+}
+
+RfidxStatus mfc_randomize_uid(uint8_t *manufacturer_data) {
+    if (!rfidx_rng_initialized) {
+        return RFIDX_DRNG_ERROR;
+    }
+
+    // Check if it's a 4-byte NUID or 7-byte UID
+    const uint8_t bcc = manufacturer_data[0] ^ manufacturer_data[1] ^ manufacturer_data[2] ^ manufacturer_data[3];
+    if (bcc == manufacturer_data[4]) {
+        // 4-byte NUID
+        uint8_t buffer[4];
+        const int ret = mbedtls_ctr_drbg_random(&rfidx_ctr_drbg, buffer, sizeof(buffer));
+        if (ret != 0) {
+            return RFIDX_DRNG_ERROR;
+        }
+        memcpy(manufacturer_data, buffer, sizeof(buffer));
+    } else {
+        // 7-byte UID
+        uint8_t buffer[7];
+        const int ret = mbedtls_ctr_drbg_random(&rfidx_ctr_drbg, buffer, sizeof(buffer));
+        if (ret != 0) {
+            return RFIDX_DRNG_ERROR;
+        }
+        memcpy(manufacturer_data, buffer, sizeof(buffer));
     }
 
     return RFIDX_OK;

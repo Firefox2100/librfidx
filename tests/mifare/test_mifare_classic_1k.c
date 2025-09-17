@@ -10,18 +10,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <setjmp.h>
-#include <string.h>
 #include <unistd.h>
 #include <cJSON.h>
 #include <cmocka.h>
 #include "librfidx/mifare/mifare_classic_1k.h"
 
 static void assert_manufacturer_correct(const Mfc1kData *mfc1k) {
-    const uint8_t expected_uid[4]               = {0x2A, 0xF9, 0x02, 0x4A};
-    const uint8_t expected_manufacturer_data[12] = {0x9B, 0x88, 0x04, 0x00, 0xC8, 0x48,
-                                                    0x00, 0x20, 0x00, 0x00, 0x00, 0x21};
+    const uint8_t expected_uid[4]                   = {0x2A, 0xF9, 0x02, 0x4A};
+    const uint8_t expected_manufacturer_data[12]    = {0x88, 0x04, 0x00, 0xC8, 0x48, 0x00,
+                                                    0x20, 0x00, 0x00, 0x00, 0x21};
+    const uint8_t expected_bcc                      = 0x9B;
 
     assert_memory_equal(mfc1k->manufacturer_data_4b.nuid, expected_uid, sizeof(expected_uid));
+    assert_memory_equal(&mfc1k->manufacturer_data_4b.bcc, &expected_bcc, 1);
     assert_memory_equal(
         mfc1k->manufacturer_data_4b.manufacturer_data,
         expected_manufacturer_data,

@@ -17,6 +17,8 @@
     _Generic((data),                                                \
         Ntag215Data *: ntag215_transform_format,                    \
         const Ntag215Data *: ntag215_transform_format,              \
+        Mfc1kData *: mfc1k_transform_format,                        \
+        const Mfc1kData *: mfc1k_transform_format,                  \
         default: unsupported_transform_format                       \
     )(data, header, output_format, filename)
 
@@ -25,11 +27,9 @@
         typedef RfidxStatus (*rfidx__parse_sig_t)(const char*, OUT_TYPE*, HDR_TYPE*);           \
         rfidx__parse_sig_t rfidx__pf = (PARSE_FN);                                              \
         (void)rfidx__pf;                                                                        \
-                                                                                                \
         char *rfidx__buf = NULL;                                                                \
         RfidxStatus rfidx__st = read_file((FILENAME), &rfidx__buf, NULL, ERR_CODE);             \
         if (rfidx__st != RFIDX_OK) return rfidx__st;                                            \
-                                                                                                \
         RfidxStatus rfidx__pst = rfidx__pf(rfidx__buf, (OUT_PTR), (HDR_PTR));                   \
         free(rfidx__buf);                                                                       \
         return rfidx__pst;                                                                      \
@@ -40,16 +40,71 @@
         typedef RfidxStatus (*rfidx__parse_sig_t)(const uint8_t*, const size_t, OUT_TYPE*, HDR_TYPE*);  \
         rfidx__parse_sig_t rfidx__pf = (PARSE_FN);                                                      \
         (void)rfidx__pf;                                                                                \
-                                                                                                        \
         char *rfidx__buf = NULL;                                                                        \
         size_t rfidx__buf_len = 0;                                                                      \
         RfidxStatus rfidx__st = read_file((FILENAME), &rfidx__buf, &rfidx__buf_len, ERR_CODE);          \
         if (rfidx__st != RFIDX_OK) return rfidx__st;                                                    \
-                                                                                                        \
         RfidxStatus rfidx__pst = rfidx__pf(                                                             \
             (const uint8_t *)rfidx__buf, rfidx__buf_len, (OUT_PTR), (HDR_PTR));                         \
         free(rfidx__buf);                                                                               \
         return rfidx__pst;                                                                              \
+    } while (0)
+
+#define TRANSFORM_FORMAT(FILENAME, OUT_FMT, OUT_PTR, OUT_TYPE, HDR_PTR, HDR_TYPE, B_SIZE,   \
+                         SB_FN, OB_FN, SJ_FN, OJ_FN, SN_FN, ON_FN)                          \
+    do {                                                                                    \
+        const bool save_to_file = (filename != NULL) && (strlen(filename) > 0);             \
+        typedef RfidxStatus (*rfidx__save_sig_t)(                                           \
+            const char*, const OUT_TYPE*, const HDR_TYPE*);                                 \
+        typedef uint8_t* (*rfidx__sb_sig_t)(                                                \
+            const OUT_TYPE*, const HDR_TYPE*);                                              \
+        typedef char* (*rfidx__st_sig_t)(                                                   \
+            const OUT_TYPE*, const HDR_TYPE*);                                              \
+                                                                                            \
+        switch (OUT_FMT) {                                                                  \
+            case FORMAT_BINARY:                                                             \
+                if (save_to_file) {                                                         \
+                    rfidx__save_sig_t rfidx__sf = (OB_FN);                                  \
+                    (void)rfidx__sf;                                                        \
+                    rfidx__sf(FILENAME, OUT_PTR, HDR_PTR);                                  \
+                } else {                                                                    \
+                    rfidx__sb_sig_t rfidx__sf = (SB_FN);                                    \
+                    (void)rfidx__sf;                                                        \
+                    uint8_t *buffer = rfidx__sf(OUT_PTR, HDR_PTR);                          \
+                    char *hex_str = malloc((B_SIZE) * 2 + 1);                               \
+                    if (!hex_str) {                                                         \
+                        free(buffer);                                                       \
+                        return NULL;                                                        \
+                    }                                                                       \
+                    for (size_t i = 0; i < (B_SIZE); i++) {                                 \
+                        sprintf(hex_str + i * 2, "%02X", buffer[i]);                        \
+                    }                                                                       \
+                    free(buffer);                                                           \
+                    return hex_str;                                                         \
+                }                                                                           \
+            case FORMAT_JSON:                                                               \
+                if (save_to_file) {                                                         \
+                    rfidx__save_sig_t rfidx__sf = (OJ_FN);                                  \
+                    (void)rfidx__sf;                                                        \
+                    rfidx__sf(FILENAME, OUT_PTR, HDR_PTR);                                  \
+                } else {                                                                    \
+                    rfidx__st_sig_t rfidx__sf = (SJ_FN);                                    \
+                    (void)rfidx__sf;                                                        \
+                    return rfidx__sf(OUT_PTR, HDR_PTR);                                     \
+                }                                                                           \
+            case FORMAT_NFC:                                                                \
+                if (save_to_file) {                                                         \
+                    rfidx__save_sig_t rfidx__sf = (ON_FN);                                  \
+                    (void)rfidx__sf;                                                        \
+                    rfidx__sf(FILENAME, OUT_PTR, HDR_PTR);                                  \
+                } else {                                                                    \
+                    rfidx__st_sig_t rfidx__sf = (SN_FN);                                    \
+                    (void)rfidx__sf;                                                        \
+                    return rfidx__sf(OUT_PTR, HDR_PTR);                                     \
+                }                                                                           \
+            default:                                                                        \
+                return NULL;                                                                \
+        }                                                                                   \
     } while (0)
 
 /**
@@ -70,6 +125,7 @@ char *unsupported_transform_format(
 );
 
 RfidxStatus read_file(const char *filename, char **out_buf, size_t *out_len, uint32_t err_code);
+
 RfidxStatus write_file(
     const char *filename,
     const char *buffer,
@@ -114,7 +170,7 @@ TagType read_tag_from_file(
  */
 RFIDX_EXPORT RfidxStatus rfidx_main(
     int argc,
-    char ** argv,
+    char **argv,
     FILE *output_stream,
     FILE *error_stream
 );

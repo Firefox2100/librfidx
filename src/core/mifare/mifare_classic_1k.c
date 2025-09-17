@@ -369,3 +369,65 @@ char *mfc1k_serialize_nfc(const Mfc1kData *mfc1k, const MfcMetadataHeader *heade
 
     return buf;
 }
+
+RfidxStatus mfc1k_generate(Mfc1kData *mfc1k, MfcMetadataHeader *header) {
+    // Re-initialize the memory space
+    memset(mfc1k, 0, sizeof(Mfc1kData));
+    memset(header, 0, sizeof(MfcMetadataHeader));
+
+    // Generate UID
+    mfc_randomize_uid(mfc1k->blocks[0][0]);
+
+    return RFIDX_OK;
+}
+
+RfidxStatus mfc1k_wipe(Mfc1kData* mfc1k) {
+    // Reset all sectors
+    for (int i = 0; i < MFC_1K_NUM_SECTOR; i++) {
+        for (int j = 0; j < MFC_1K_NUM_BLOCK_PER_SECTOR - 1; j++) {
+            if (i == 0 && j == 0) {
+                // Preserve the manufacturer block (sector 0, block 0)
+                continue;
+            }
+            memset(mfc1k->structure.sector[i].data_block[j].data, 0, MFC_1K_BLOCK_SIZE);
+        }
+
+        // Reset the keys and access bits in the sector trailer
+        memset(mfc1k->structure.sector[i].sector_trailer.key_a, 0xFF, 6);
+        memset(mfc1k->structure.sector[i].sector_trailer.key_b, 0xFF, 6);
+        mfc1k->structure.sector[i].sector_trailer.access_bits[0] = 0xFF;
+        mfc1k->structure.sector[i].sector_trailer.access_bits[1] = 0x07;
+        mfc1k->structure.sector[i].sector_trailer.access_bits[2] = 0x80;
+        mfc1k->structure.sector[i].sector_trailer.user_data = 0x69;
+    }
+
+    return RFIDX_OK;
+}
+
+RfidxStatus mfc1k_transform_data(
+    Mfc1kData **mfc1k,
+    MfcMetadataHeader **header,
+    const TransformCommand command
+) {
+    switch (command) {
+        case TRANSFORM_NONE:
+            return RFIDX_OK;
+        case TRANSFORM_WIPE:
+            return mfc1k_wipe(*mfc1k);
+        case TRANSFORM_GENERATE:
+            *mfc1k = malloc(sizeof(Mfc1kData));
+            if (!*mfc1k) return RFIDX_MEMORY_ERROR;
+
+            *header = malloc(sizeof(MfcMetadataHeader));
+            if (!*header) {
+                free(*mfc1k);
+                return RFIDX_MEMORY_ERROR;
+            }
+
+            return mfc1k_generate(*mfc1k, *header);
+        case TRANSFORM_RANDOMIZE_UID:
+            return mfc_randomize_uid((*mfc1k)->blocks[0][0]);
+        default:
+            return RFIDX_UNKNOWN_ENUM_ERROR;
+    }
+}

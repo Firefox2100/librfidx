@@ -71,11 +71,11 @@ RfidxStatus mfc1k_generate(
     MfcMetadataHeader *header
 );
 
-RfidxStatus mfc1k_wipe(Mfc1kData* ntag215);
+RfidxStatus mfc1k_wipe(Mfc1kData* mfc1k);
 
 RFIDX_EXPORT RfidxStatus mfc1k_transform_data(
-    Mfc1kData *mfc1k,
-    MfcMetadataHeader *header,
+    Mfc1kData **mfc1k,
+    MfcMetadataHeader **header,
     TransformCommand command
 );
 

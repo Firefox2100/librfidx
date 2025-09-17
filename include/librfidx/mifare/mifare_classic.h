@@ -24,7 +24,8 @@
  */
 typedef struct {
     uint8_t nuid[4];                /**< NUID, 3 bytes */
-    uint8_t manufacturer_data[12];  /**< Manufacturer data, 12 bytes */
+    uint8_t bcc;                    /**< Block Check Character */
+    uint8_t manufacturer_data[11];  /**< Manufacturer data, 12 bytes */
 } MfcManufacturerData4B;
 #pragma pack(pop)
 
@@ -150,7 +151,7 @@ RfidxStatus mfc_validate_manufacturer_data(const uint8_t *manufacturer_data);
  * @param manufacturer_data Pointer to a 16-byte buffer containing the manufacturer data to randomize.
  * @return RfidxStatus indicating success or failure of the randomization.
  */
-RfidxStatus mfc_randomize_uid(const uint8_t *manufacturer_data);
+RfidxStatus mfc_randomize_uid(uint8_t *manufacturer_data);
 
 _Static_assert(sizeof(MfcManufacturerData4B) == 16, "Mifare Classic manufacturer data size mismatch");
 _Static_assert(sizeof(MfcManufacturerData7B) == 16, "Mifare Classic manufacturer data size mismatch");

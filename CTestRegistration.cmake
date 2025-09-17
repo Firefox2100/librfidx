@@ -61,6 +61,7 @@ set(TESTS
     test_rfidx_transform_tag_amiibo_missing_key
     test_rfidx_transform_tag_unknown
     test_rfidx_randomize_uid_ntag215
+    test_rfidx_randomize_uid_mfc1k
     test_rfidx_randomize_uid_amiibo
     test_rfidx_generate_amiibo
 )

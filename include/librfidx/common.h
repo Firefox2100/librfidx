@@ -48,6 +48,7 @@ typedef uint32_t RfidxStatus;
 typedef enum {
     TAG_UNSPECIFIED = 0,        /**< Unspecified tag type, instructing the program to deduct the type */
     NTAG_215,                   /**< NTAG 215 */
+    MFC_1K,                     /**< Mifare Classic 1K */
     AMIIBO,                     /**< Nintendo Amiibo, an application level definition based on NTAG215 */
     TAG_UNKNOWN = -1,           /**< Cannot deduct the tag type */
     TAG_ERROR = -2,             /**< Error parsing the tag */
@@ -65,6 +66,7 @@ typedef struct {
 
 static const TagTypeMap tag_type_map[] = {
     {"amiibo", AMIIBO},
+    {"mfc1k", MFC_1K},
     {"ntag215", NTAG_215},
 };
 

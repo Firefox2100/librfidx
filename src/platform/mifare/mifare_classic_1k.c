@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <cJSON.h>
 #include <ctype.h>
+#include <string.h>
 #include "librfidx/mifare/mifare_classic_1k.h"
 #include "librfidx/rfidx.h"
 
@@ -100,4 +101,58 @@ RfidxStatus mfc1k_save_to_nfc(
         RFIDX_NFC_FILE_IO_ERROR);
     free(nfc_str);
     return status;
+}
+
+char *mfc1k_transform_format(
+    const Mfc1kData *mfc1k,
+    const MfcMetadataHeader *header,
+    const FileFormat output_format,
+    const char *filename
+) {
+    TRANSFORM_FORMAT(
+        filename,
+        output_format,
+        mfc1k,
+        Mfc1kData,
+        header,
+        MfcMetadataHeader,
+        sizeof(Mfc1kData),
+        mfc1k_serialize_binary,
+        mfc1k_save_to_binary,
+        mfc1k_serialize_json,
+        mfc1k_save_to_json,
+        mfc1k_serialize_nfc,
+        mfc1k_save_to_nfc
+        );
+}
+
+RfidxStatus mfc1k_read_from_file(
+    const char *filename,
+    Mfc1kData **mfc1k,
+    MfcMetadataHeader **header
+) {
+    // Determine the suffix of the file
+    const char *suffix = strrchr(filename, '.');
+    if (!suffix) {
+        return RFIDX_FILE_FORMAT_ERROR;
+    }
+    if (strcmp(suffix, ".bin") == 0) {
+        *mfc1k = malloc(sizeof(Mfc1kData));
+        *header = malloc(sizeof(MfcMetadataHeader));
+        return mfc1k_load_from_binary(filename, *mfc1k, *header);
+    }
+
+    if (strcmp(suffix, ".json") == 0) {
+        *mfc1k = malloc(sizeof(Mfc1kData));
+        *header = malloc(sizeof(MfcMetadataHeader));
+        return mfc1k_load_from_json(filename, *mfc1k, *header);
+    }
+
+    if (strcmp(suffix, ".nfc") == 0) {
+        *mfc1k = malloc(sizeof(Mfc1kData));
+        *header = malloc(sizeof(MfcMetadataHeader));
+        return mfc1k_load_from_nfc(filename, *mfc1k, *header);
+    }
+
+    return RFIDX_FILE_FORMAT_ERROR;
 }

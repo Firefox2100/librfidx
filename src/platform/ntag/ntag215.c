@@ -114,42 +114,21 @@ RfidxStatus ntag215_save_to_nfc(const char *filename, const Ntag215Data *ntag215
 
 char *ntag215_transform_format(const Ntag215Data *data, const Ntag21xMetadataHeader *header,
                                const FileFormat output_format, const char *filename) {
-    const bool save_to_file = (filename != NULL) && (strlen(filename) > 0);
-
-    switch (output_format) {
-        case FORMAT_BINARY:
-            if (save_to_file) {
-                ntag215_save_to_binary(filename, data, header);
-            } else {
-                uint8_t *buffer = ntag215_serialize_binary(data, header);
-
-                char *hex_str = malloc((sizeof(Ntag215Data) + sizeof(Ntag21xMetadataHeader)) * 2 + 1);
-                if (!hex_str) {
-                    free(buffer);
-                    return NULL;
-                }
-                for (size_t i = 0; i < sizeof(Ntag215Data) + sizeof(Ntag21xMetadataHeader); i++) {
-                    sprintf(hex_str + i * 2, "%02X", buffer[i]);
-                }
-
-                free(buffer);
-                return hex_str;
-            }
-        case FORMAT_JSON:
-            if (save_to_file) {
-                ntag215_save_to_json(filename, data, header);
-            } else {
-                return ntag215_serialize_json(data, header);
-            }
-        case FORMAT_NFC:
-            if (save_to_file) {
-                ntag215_save_to_nfc(filename, data, header);
-            } else {
-                return ntag215_serialize_nfc(data, header);
-            }
-        default:
-            return NULL;
-    }
+    TRANSFORM_FORMAT(
+        filename,
+        output_format,
+        data,
+        Ntag215Data,
+        header,
+        Ntag21xMetadataHeader,
+        sizeof(Ntag215Data) + sizeof(Ntag21xMetadataHeader),
+        ntag215_serialize_binary,
+        ntag215_save_to_binary,
+        ntag215_serialize_json,
+        ntag215_save_to_json,
+        ntag215_serialize_nfc,
+        ntag215_save_to_nfc
+        );
 }
 
 RfidxStatus ntag215_read_from_file(const char *filename, Ntag215Data **data, Ntag21xMetadataHeader **header) {

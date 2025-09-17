@@ -50,6 +50,19 @@ RFIDX_EXPORT RfidxStatus mfc1k_save_to_nfc(
     const MfcMetadataHeader *header
 );
 
+RFIDX_EXPORT char *mfc1k_transform_format(
+    const Mfc1kData *mfc1k,
+    const MfcMetadataHeader *header,
+    FileFormat output_format,
+    const char *filename
+);
+
+RFIDX_EXPORT RfidxStatus mfc1k_read_from_file(
+    const char *filename,
+    Mfc1kData **mfc1k,
+    MfcMetadataHeader **header
+);
+
 #endif
 
 #endif //LIBRFIDX_MIFARE_CLASSIC_1K_H

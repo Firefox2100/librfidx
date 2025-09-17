@@ -15,19 +15,18 @@
 #include "librfidx/rfidx.h"
 #include "librfidx/ntag/ntag215.h"
 
-TagType read_tag_from_file(const char *filename, const TagType input_type, void **data, void **header);
 RfidxStatus save_tag_to_file(
     const void *data,
     const void *header,
-    const TagType tag_type,
-    const FileFormat output_format,
+    TagType tag_type,
+    FileFormat output_format,
     const char *filename,
     FILE *output_stream,
     FILE *error_stream
 );
 RfidxStatus transform_tag(
-    const TagType tag_type,
-    const TransformCommand command,
+    TagType tag_type,
+    TransformCommand command,
     void **data,
     void **header,
     const char *uuid,
@@ -92,7 +91,7 @@ static void test_rfidx_save_tag_to_file_binary(void **state) {
     (void) state;
     void *data = NULL;
     void *header = NULL;
-    TagType type = read_tag_from_file("./tests/assets/ntag215.bin", NTAG_215, &data, &header);
+    const TagType type = read_tag_from_file("./tests/assets/ntag215.bin", NTAG_215, &data, &header);
     assert_int_equal(type, NTAG_215);
 
     char *out_buf = NULL, *err_buf = NULL;
@@ -196,6 +195,34 @@ static void test_rfidx_randomize_uid_ntag215(void **state) {
     assert_true(strncmp(out_buf + 123, "0448B87C262879BF", 16) != 0);
 }
 
+static void test_rfidx_randomize_uid_mfc1k(void **state) {
+    char *argv[] = {
+        "rfidx",
+        "--input", "./tests/assets/mifare-classic-1k-v2.bin",
+        "--input-type", "mfc1k",
+        "--output-format", "binary",
+        "--transform", "randomize-uid",
+        NULL
+    };
+    const int argc = sizeof(argv) / sizeof(argv[0]) - 1;
+
+    char *out_buf = NULL, *err_buf = NULL;
+    size_t out_size = 0, err_size = 0;
+    FILE *out_stream = open_memstream(&out_buf, &out_size);
+    FILE *err_stream = open_memstream(&err_buf, &err_size);
+
+    const RfidxStatus status = rfidx_main(argc, argv, out_stream, err_stream);
+
+    fclose(out_stream);
+    fclose(err_stream);
+
+    assert_int_equal(status, RFIDX_OK);
+    assert_string_equal(err_buf, "");
+
+    assert_true(strncmp(out_buf, "Tag data: \n", 11) == 0);
+    assert_true(strncmp(out_buf + 123, "0448B87C262879BF", 16) != 0);
+}
+
 static void test_rfidx_randomize_uid_amiibo(void **state) {
     char *argv[] = {
         "rfidx",
@@ -265,6 +292,7 @@ static const struct CMUnitTest rfidx_tests[] = {
     cmocka_unit_test(test_rfidx_transform_tag_amiibo_missing_key),
     cmocka_unit_test(test_rfidx_transform_tag_unknown),
     cmocka_unit_test(test_rfidx_randomize_uid_ntag215),
+    cmocka_unit_test(test_rfidx_randomize_uid_mfc1k),
     cmocka_unit_test(test_rfidx_randomize_uid_amiibo),
     cmocka_unit_test(test_rfidx_generate_amiibo),
 };

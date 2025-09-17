@@ -13,6 +13,7 @@
 #include <string.h>
 #include <getopt.h>
 #include "librfidx/ntag/ntag215.h"
+#include "librfidx/mifare/mifare_classic_1k.h"
 #include "librfidx/application/amiibo.h"
 #include "librfidx/rfidx.h"
 
@@ -107,6 +108,13 @@ TagType read_tag_from_file(const char *filename, const TagType input_type, void 
                 return TAG_ERROR;
             }
             return NTAG_215;
+        case MFC_1K:
+            if (mfc1k_read_from_file(filename, (Mfc1kData **) data, (MfcMetadataHeader **) header) !=
+                RFIDX_OK) {
+                fprintf(stderr, "Mfc1k data reading failed.\n");
+                return TAG_ERROR;
+            }
+            return MFC_1K;
         case AMIIBO:
             if (ntag215_read_from_file(filename, (Ntag215Data **) data, (Ntag21xMetadataHeader **) header) !=
                 RFIDX_OK) {
@@ -135,6 +143,18 @@ RfidxStatus save_tag_to_file(
             if (filename == NULL || strlen(filename) > 0) {
                 if (buffer == NULL) {
                     fprintf(error_stream, "Failed to transform NTAG215 data to %s format.\n", filename);
+                    return RFIDX_NUMERICAL_OPERATION_FAILED;
+                }
+
+                fprintf(output_stream, "Tag data: \n%s\n", buffer);
+            }
+            if (buffer) free(buffer);
+            return RFIDX_OK;
+        case MFC_1K:
+            buffer = transform_format((Mfc1kData*)data, (MfcMetadataHeader*)header, output_format, filename);
+            if (filename == NULL || strlen(filename) > 0) {
+                if (buffer == NULL) {
+                    fprintf(error_stream, "Failed to transform Mfc1k data to %s format.\n", filename);
                     return RFIDX_NUMERICAL_OPERATION_FAILED;
                 }
 
@@ -173,6 +193,8 @@ RfidxStatus transform_tag(
     switch (tag_type) {
         case NTAG_215:
             return ntag215_transform_data((Ntag215Data **) data, (Ntag21xMetadataHeader **) header, command);
+        case MFC_1K:
+            return mfc1k_transform_data((Mfc1kData **) data, (MfcMetadataHeader **) header, command);
         case AMIIBO:
             // Convert the uuid to uint8_t array
             uint8_t uuid_bytes[8] = {0};
